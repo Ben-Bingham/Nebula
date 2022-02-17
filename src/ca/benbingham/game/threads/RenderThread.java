@@ -12,89 +12,54 @@ import ca.benbingham.engine.util.FileReader;
 import ca.benbingham.game.Quad;
 import ca.benbingham.game.worldstructure.Chunk;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-
-import java.util.Arrays;
 
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
-import static ca.benbingham.engine.util.Printing.print;
 import static ca.benbingham.engine.util.Printing.printError;
 import static java.lang.Math.toRadians;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 
-public class Main extends Thread{
-    private int width = 800;
-    private int height = 600;
-
-    private Window window;
+public class RenderThread extends Thread {
 
     private ShaderProgram defaultShaderProgram;
+    private Shader vertexShader;
+    private Shader fragmentShader;
+
+    private Texture testTexture;
+    private Texture textureAtlas;
 
     private VertexArrayObject worldVAO;
     private VertexBufferObject worldVBO;
     private ElementBufferObject worldEBO;
 
-    private Texture testTexture;
-    private Texture textureAtlas;
-
-    private Matrix4f modelMatrix;
-    private Matrix4f viewMatrix;
     private Matrix4f projectionMatrix;
+    private Matrix4f viewMatrix;
+    private Matrix4f modelMatrix;
+
+    private Camera camera;
+    private Window window;
 
     private Chunk testChunk;
 
-    private Camera camera;
-
-    private float deltaTime = 0.0f;
-    private float lastFrame = 0.0f;
-
-    private final float mouseSensitivity = 0.07f;
-
-    private final float defaultFOV = 45f;
-
-    private boolean meshCalculated = false;
+    private boolean meshCalculated;
     private int count;
 
-
-    public static void main(String[] args) {
-        Main mainThread = new Main();
-        mainThread.start();
+    public RenderThread(Camera camera, Window window) {
+        this.camera = camera;
+        this.window = window;
     }
 
+    @Override
     public void run() {
         init();
-        renderInitialization();
-
-        // Game loop
-        while (!glfwWindowShouldClose(window.getWindow())) {
-            update();
-            render();
-        }
-        
-        destroy();
-    }
-
-    private void init() {
-        window = new Window(height, width, "LWJGL test", true);
-
-        GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        height = vidMode.height();
-        width = vidMode.width();
-
-        window.centerWindow();
-
-        glfwSetInputMode(window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-        camera = new Camera(window, defaultFOV, mouseSensitivity, 4f, new Vector3f(10, 258, 10));
     }
 
     private void compileShaders() {
@@ -145,7 +110,28 @@ public class Main extends Thread{
         fragmentShader.delete();
     }
 
-    private void renderInitialization() {
+    private void compileTextures() {
+        // texture setup
+        testTexture = new Texture();
+        testTexture.bindImageData("assets/images/container2.png", true);
+        testTexture.generateMipmaps();
+        testTexture.setWrapSettings(GL_REPEAT);
+        testTexture.setShrinkMode(GL_NEAREST_MIPMAP_NEAREST);
+        testTexture.setStretchMode(GL_NEAREST);
+
+        // atlas
+        textureAtlas = new Texture();
+        textureAtlas.bindImageData("assets/images/textureAtlas.png", true);
+        textureAtlas.generateMipmaps();
+        textureAtlas.setWrapSettings(GL_REPEAT);
+        textureAtlas.setShrinkMode(GL_NEAREST);
+        textureAtlas.setStretchMode(GL_NEAREST);
+
+        glActiveTexture(GL_TEXTURE0);
+        testTexture.bind();
+    }
+
+    private void renderInit() {
         // basic setup
         GL.createCapabilities();
         compileShaders();
@@ -174,25 +160,6 @@ public class Main extends Thread{
         createAttributePointer(1, uvSize, vertexSizeBytes, positionSize);
         enableAttributePointer(1);
 
-        // texture setup
-        testTexture = new Texture();
-        testTexture.bindImageData("assets/images/container2.png", true);
-        testTexture.generateMipmaps();
-        testTexture.setWrapSettings(GL_REPEAT);
-        testTexture.setShrinkMode(GL_NEAREST_MIPMAP_NEAREST);
-        testTexture.setStretchMode(GL_NEAREST);
-
-        // atlas
-        textureAtlas = new Texture();
-        textureAtlas.bindImageData("assets/images/textureAtlas.png", true);
-        textureAtlas.generateMipmaps();
-        textureAtlas.setWrapSettings(GL_REPEAT);
-        textureAtlas.setShrinkMode(GL_NEAREST);
-        textureAtlas.setStretchMode(GL_NEAREST);
-
-        glActiveTexture(GL_TEXTURE0);
-        testTexture.bind();
-
         defaultShaderProgram.use();
         defaultShaderProgram.uploadUniform("texture1", 0);
 
@@ -205,13 +172,19 @@ public class Main extends Thread{
             }
         }
 
-        projectionMatrix = new Matrix4f()
-                .perspective((float) toRadians(camera.getFOV()), (float) width / height, 0.1f, 100f);
+//        projectionMatrix = new Matrix4f()
+//                .perspective((float) toRadians(camera.getFOV()), (float) width / height, 0.1f, 100f);
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
-    
-    private void render() {
+
+    private void init() {
+        compileShaders();
+        compileTextures();
+        renderInit();
+    }
+
+    private void update() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -241,23 +214,6 @@ public class Main extends Thread{
         glDrawElements(GL_TRIANGLES, count * 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window.getWindow());
-    }
-    
-    private void update() {
-        glfwPollEvents();
-
-        if(glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window.getWindow(), true);
-        }
-
-        camera.update();
-
-        float currentFrame = (float) glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
-        // prints fps to console
-        //print(1 / deltaTime);
     }
 
     private int recreateWorldMesh() {
@@ -301,17 +257,5 @@ public class Main extends Thread{
             }
         }
         return count;
-    }
-
-    private void destroy() {
-        window.destroy();
-        worldVBO.delete();
-        worldVAO.delete();
-        worldEBO.delete();
-
-        testTexture.delete();
-        textureAtlas.delete();
-
-        defaultShaderProgram.delete();
     }
 }

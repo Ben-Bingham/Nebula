@@ -8,7 +8,7 @@ public class Block {
     private final Vector3f location;
 
     private final int numberOfFaces = 6;
-    private final ca.benbingham.game.worldstructure.Chunk parentChunk;
+    private final Chunk parentChunk;
 
     private Block positiveYNeighbour;
     private Block negativeYNeighbour;
@@ -110,7 +110,7 @@ public class Block {
             0.0f, 0.0f,  // bottom-left
     };
 
-    public Block(Vector3f location, ca.benbingham.game.worldstructure.Chunk parentChunk) {
+    public Block(Vector3f location, Chunk parentChunk) {
         this.location = location;
         this.parentChunk = parentChunk;
 

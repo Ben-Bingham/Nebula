@@ -8,7 +8,7 @@ import org.joml.Vector4f;
 import java.util.Arrays;
 
 public class Quad {
-    public ca.benbingham.game.Vertex[] vertices;
+    public Vertex[] vertices;
     private final int[] indices = {
             0, 1, 2,
             2, 3, 0
@@ -20,10 +20,10 @@ public class Quad {
     private final int numberOfVertices = 4;
 
     public Quad() {
-        vertices = new ca.benbingham.game.Vertex[numberOfVertices];
+        vertices = new Vertex[numberOfVertices];
 
         for (int i = 0; i < vertices.length; i++) {
-            vertices[i] = new ca.benbingham.game.Vertex(new Vector3f(0.0f, 0.0f, 0.0f), new Vector2f(0.0f, 0.0f));
+            vertices[i] = new Vertex(new Vector3f(0.0f, 0.0f, 0.0f), new Vector2f(0.0f, 0.0f));
         }
     }
 

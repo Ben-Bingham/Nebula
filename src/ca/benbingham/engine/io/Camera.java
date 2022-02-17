@@ -44,6 +44,7 @@ public class Camera {
     private Vector3f position;
 
     private Matrix4f viewMatrix;
+    private Matrix4f projectionMatrix;
 
     private float lastFrame;
     private float deltaTime;
@@ -63,6 +64,10 @@ public class Camera {
         front = new Vector3f(0.0f, 0.0f, -1.0f);
         worldUp = new Vector3f(0.0f, 1.0f, 0.0f);
         position = new Vector3f(0.0f, 0.0f, 3.0f);
+
+        projectionMatrix = new Matrix4f()
+                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, 100f);
+
     }
     public Camera(Window window, float maxFOV, float mouseSensitivity, float movementSpeed, Vector3f spawnLocation) {
         this.maxFOV = maxFOV;
