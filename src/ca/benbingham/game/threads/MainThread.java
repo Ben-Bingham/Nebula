@@ -33,7 +33,7 @@ public class MainThread extends Thread{
     private int width = 800;
     private int height = 600;
 
-    private static Window window;
+    private Window window;
 
     private ShaderProgram defaultShaderProgram;
 
@@ -50,7 +50,7 @@ public class MainThread extends Thread{
 
     private Chunk testChunk;
 
-    private static Camera camera;
+    private Camera camera;
 
     private float deltaTime = 0.0f;
     private float lastFrame = 0.0f;
@@ -62,13 +62,18 @@ public class MainThread extends Thread{
     private boolean meshCalculated = false;
     private int count;
 
+    public MainThread(Camera camera, Window window) {
+        this.window = window;
+        this.camera = camera;
+    }
+
 
     public static void main(String[] args) {
-        MainThread mainThread = new MainThread();
-        mainThread.start();
-
-        RenderThread renderThread = new RenderThread(camera, window);
-        renderThread.start();
+//        MainThread mainThread = new MainThread();
+//        mainThread.start();
+//
+//        RenderThread renderThread = new RenderThread(camera, window);
+//        renderThread.start();
     }
 
     @Override
@@ -306,14 +311,14 @@ public class MainThread extends Thread{
 //    }
 
     private void destroy() {
-        window.destroy();
-        worldVBO.delete();
-        worldVAO.delete();
-        worldEBO.delete();
+//        window.destroy();
+//        worldVBO.delete();
+//        worldVAO.delete();
+//        worldEBO.delete();
 
-        testTexture.delete();
-        textureAtlas.delete();
-
-        defaultShaderProgram.delete();
+//        testTexture.delete();
+//        textureAtlas.delete();
+//
+//        defaultShaderProgram.delete();
     }
 }

@@ -12,13 +12,14 @@ import ca.benbingham.engine.util.FileReader;
 import ca.benbingham.game.Quad;
 import ca.benbingham.game.worldstructure.Chunk;
 import org.joml.Matrix4f;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
 import static ca.benbingham.engine.util.Printing.printError;
 import static java.lang.Math.toRadians;
-import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
+import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
@@ -29,6 +30,8 @@ import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 
 public class RenderThread extends Thread {
 
+    private int height;
+    private int width;
     private ShaderProgram defaultShaderProgram;
     private Shader vertexShader;
     private Shader fragmentShader;
@@ -46,15 +49,20 @@ public class RenderThread extends Thread {
 
     private Camera camera;
     private Window window;
+    private Game game;
 
     private Chunk testChunk;
 
     private boolean meshCalculated;
     private int count;
 
-    public RenderThread(Camera camera, Window window) {
+    public RenderThread(Game game, Camera camera, Window window) {
+        this.game = game;
         this.camera = camera;
         this.window = window;
+
+        this.height = game.getHeight();
+        this.width = game.getWidth();
     }
 
     @Override
@@ -131,7 +139,22 @@ public class RenderThread extends Thread {
         testTexture.bind();
     }
 
+    private void createWindow() {
+        window = new Window(height, width, "LWJGL test", true);
+
+        GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        height = vidMode.height();
+        width = vidMode.width();
+
+        game.setHeight(vidMode.height());
+        game.setWidth(vidMode.width());
+
+        window.centerWindow();
+    }
+
     private void renderInit() {
+        createWindow();
+
         // basic setup
         GL.createCapabilities();
         compileShaders();
@@ -257,5 +280,9 @@ public class RenderThread extends Thread {
             }
         }
         return count;
+    }
+
+    public Window getWindow() {
+        return window;
     }
 }
