@@ -3,6 +3,7 @@ package ca.benbingham.engine.io;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 
+import static ca.benbingham.engine.util.Printing.print;
 import static ca.benbingham.engine.util.Printing.printError;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -50,11 +51,6 @@ public class Window {
             glfwTerminate();
             return false;
         }
-
-        glfwMakeContextCurrent(window);
-
-        glfwSwapInterval(1);
-        glfwShowWindow(window);
         return true;
     }
 
@@ -66,6 +62,14 @@ public class Window {
                 (vidMode.width() - width) / 2,
                 (vidMode.height() - height) / 2
         );
+    }
+
+    public synchronized void makeContextCurrent() {
+        glfwMakeContextCurrent(window);
+
+        glfwSwapInterval(1);
+        glfwShowWindow(window);
+        print("window Show");
     }
 
     public void destroy() {

@@ -17,6 +17,7 @@ import org.lwjgl.opengl.GL;
 
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
+import static ca.benbingham.engine.util.Printing.print;
 import static ca.benbingham.engine.util.Printing.printError;
 import static java.lang.Math.toRadians;
 import static org.lwjgl.glfw.GLFW.*;
@@ -67,6 +68,8 @@ public class RenderThread extends Thread {
 
     @Override
     public void run() {
+        print("Render thread created");
+
         init();
     }
 
@@ -140,25 +143,28 @@ public class RenderThread extends Thread {
     }
 
     private void createWindow() {
-        window = new Window(height, width, "LWJGL test", true);
-
-        GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        height = vidMode.height();
-        width = vidMode.width();
-
-        game.setHeight(vidMode.height());
-        game.setWidth(vidMode.width());
-
-        window.centerWindow();
+//        window = new Window(height, width, "LWJGL test", true);
+//
+//        GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+//        height = vidMode.height();
+//        width = vidMode.width();
+//
+//        game.setHeight(vidMode.height());
+//        game.setWidth(vidMode.width());
+//
+//        window.centerWindow();
     }
 
     private void renderInit() {
-        createWindow();
+        //createWindow();
+
+        window.makeContextCurrent();
 
         // basic setup
-        GL.createCapabilities();
+        GL.createCapabilities(); //TODO maybe show window after this???
         compileShaders();
         glEnable(GL_DEPTH_TEST);
+
 
         // VAO and VBO setup
         int positionSize = 3;
@@ -202,9 +208,9 @@ public class RenderThread extends Thread {
     }
 
     private void init() {
+        renderInit();
         compileShaders();
         compileTextures();
-        renderInit();
     }
 
     private void update() {

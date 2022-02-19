@@ -5,6 +5,7 @@ import ca.benbingham.engine.io.Window;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWVidMode;
 
+import static ca.benbingham.engine.util.Printing.print;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Game {
@@ -22,10 +23,18 @@ public class Game {
     }
 
     public void initialize() {
+        window = new Window(height, width, "LWJGL test", true);
+
+        GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        height = vidMode.height();
+        width = vidMode.width();
+
+        window.centerWindow();
+
         RenderThread renderThread = new RenderThread(this, camera, window);
         renderThread.start();
 
-        window = renderThread.getWindow();
+        //window = renderThread.getWindow();
 
         // set up window and camera
 
@@ -37,8 +46,6 @@ public class Game {
         // create game threads
         MainThread mainThread = new MainThread(camera, window);
         mainThread.start();
-
-
     }
 
     public void destroy() {

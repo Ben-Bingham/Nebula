@@ -78,6 +78,7 @@ public class MainThread extends Thread{
 
     @Override
     public void run() {
+        print("Main thread created");
         init();
         //renderInitialization();
 
