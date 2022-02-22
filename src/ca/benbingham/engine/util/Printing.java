@@ -17,5 +17,14 @@ public class Printing {
         System.out.println(input);
     }
 
+    public static void print(boolean input) {
+        if (input) {
+            print("true");
+        }
+        else {
+            print("false");
+        }
+    }
+
     public static void printError(String input) {System.err.println("ERROR: " + input);}
 }

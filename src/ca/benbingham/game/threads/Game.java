@@ -3,10 +3,8 @@ package ca.benbingham.game.threads;
 import ca.benbingham.engine.io.Camera;
 import ca.benbingham.engine.io.Window;
 import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFWVidMode;
 
 import static ca.benbingham.engine.util.Printing.print;
-import static org.lwjgl.glfw.GLFW.*;
 
 public class Game {
     private Camera camera;
@@ -17,35 +15,22 @@ public class Game {
 
     private final int defaultFOV = 45;
     private final float mouseSensitivity = 0.07f;
+    private final float movementSpeed = 4f;
 
-    public Game() {
-
-    }
+    private RenderThread renderThread;
+    private UpdateThread updateThread;
+    private SyncThread syncThread;
 
     public void initialize() {
-        window = new Window(height, width, "LWJGL test", true);
+        syncThread = new SyncThread(this);
+        syncThread.start();
 
-        GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        height = vidMode.height();
-        width = vidMode.width();
-
-        window.centerWindow();
-
-        RenderThread renderThread = new RenderThread(this, camera, window);
-        renderThread.start();
-
-        //window = renderThread.getWindow();
-
-        // set up window and camera
-
-
-        glfwSetInputMode(window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-        camera = new Camera(window, defaultFOV, mouseSensitivity, 4f, new Vector3f(10, 258, 10));
-
-        // create game threads
-        MainThread mainThread = new MainThread(camera, window);
-        mainThread.start();
+//        // create game threads
+//        renderThread = new RenderThread(this, camera, window);
+//        renderThread.start();
+//
+//        updateThread = new UpdateThread(this, camera, window);
+//        updateThread.start();
     }
 
     public void destroy() {
@@ -66,5 +51,17 @@ public class Game {
 
     public void setWidth(int width) {
         this.width = width;
+    }
+
+    public int getDefaultFOV() {
+        return defaultFOV;
+    }
+
+    public float getMouseSensitivity() {
+        return mouseSensitivity;
+    }
+
+    public float getMovementSpeed() {
+        return movementSpeed;
     }
 }

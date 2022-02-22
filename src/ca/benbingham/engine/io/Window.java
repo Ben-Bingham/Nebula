@@ -13,16 +13,16 @@ public class Window {
     private int width;
     private String title;
     private long window;
+    private boolean fullscreen;
 
     public Window(int height, int width, String title, boolean fullscreen) {
         this.height = height;
         this.width = width;
         this.title = title;
-
-        this.create(fullscreen);
+        this.fullscreen = fullscreen;
     }
 
-    public boolean create(boolean maxSize) {
+    public boolean create() {
         // Setup Error Callback
         GLFWErrorCallback.createPrint(System.err).set();
 
@@ -37,7 +37,7 @@ public class Window {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-        if (maxSize) {
+        if (this.fullscreen) {
             GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
             width = vidMode.width();
@@ -51,6 +51,12 @@ public class Window {
             glfwTerminate();
             return false;
         }
+
+        glfwMakeContextCurrent(window);
+
+        glfwSwapInterval(1);
+        glfwShowWindow(window);
+
         return true;
     }
 
@@ -62,14 +68,6 @@ public class Window {
                 (vidMode.width() - width) / 2,
                 (vidMode.height() - height) / 2
         );
-    }
-
-    public synchronized void makeContextCurrent() {
-        glfwMakeContextCurrent(window);
-
-        glfwSwapInterval(1);
-        glfwShowWindow(window);
-        print("window Show");
     }
 
     public void destroy() {

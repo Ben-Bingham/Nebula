@@ -84,6 +84,9 @@ public class Camera {
         front = new Vector3f(0.0f, 0.0f, -1.0f);
         worldUp = new Vector3f(0.0f, 1.0f, 0.0f);
         position = spawnLocation;
+
+        projectionMatrix = new Matrix4f()
+                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, 100f);
     }
 
     private void receiveMousePositionInput() {
@@ -217,6 +220,10 @@ public class Camera {
 
     public Matrix4f getViewMatrix() {
         return viewMatrix;
+    }
+
+    public Matrix4f getProjectionMatrix() {
+        return projectionMatrix;
     }
 
     public float getBaseMovementSpeed() {

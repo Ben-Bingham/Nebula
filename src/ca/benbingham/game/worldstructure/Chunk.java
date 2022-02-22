@@ -4,9 +4,9 @@ import org.joml.Vector3f;
 
 public class Chunk {
     public Block[][][] blocks;
-    private final int chunkSizeX = 16;
+    private final int chunkSizeX = 32;
     private final int chunkSizeY = 256;
-    private final int chunkSizeZ = 16;
+    private final int chunkSizeZ = 32;
 
     public Chunk() {
         blocks = new Block[this.chunkSizeX][this.chunkSizeY][this.chunkSizeZ];

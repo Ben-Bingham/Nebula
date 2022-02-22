@@ -21,4 +21,14 @@ public class Vertex {
 
         return string;
     }
+
+    public float[] getAsFloatArray() {
+        float[] array = new float[5];
+        array[0] = position.x;
+        array[1] = position.y;
+        array[2] = position.z;
+        array[3] = texCords.x;
+        array[4] = texCords.y;
+        return array;
+    }
 }
