@@ -1,6 +1,7 @@
-package ca.benbingham.game.threads;
+package ca.benbingham.game.gameclasses;
 
 import ca.benbingham.game.Quad;
+import ca.benbingham.game.worldstructure.Block;
 import ca.benbingham.game.worldstructure.Chunk;
 import org.joml.Matrix4f;
 
@@ -9,8 +10,7 @@ import java.util.ArrayList;
 import static ca.benbingham.engine.util.ArrayUtil.*;
 import static ca.benbingham.engine.util.Printing.print;
 
-public class UpdateThread extends Thread{
-    private final SyncThread syncThread;
+public class Updater {
     private int width;
     private int height;
 
@@ -32,32 +32,20 @@ public class UpdateThread extends Thread{
 
     int test = 0;
 
+    private Block[][][] oldChunkData;
+
     // flags
     private boolean startProcess = false;
     private int numberOfVertices;
 
-    public UpdateThread(SyncThread syncThread) {
-        this.syncThread = syncThread;
-        this.game = syncThread.getGame();
+    public Updater(Game game) {
+        this.game = game;
 
         this.height = game.getHeight();
         this.width = game.getWidth();
     }
 
-    @Override
-    public void run() {
-        print("Update thread created");
-        init();
-
-        // Game loop
-        while (syncThread.isGameOpen()) {
-            update();
-        }
-        
-        destroy();
-    }
-
-    private void init() {
+    public void init() {
         testChunk = new Chunk();
 
         for (int i = 0; i < testChunk.getChunkSizeX(); i++) {
@@ -70,42 +58,26 @@ public class UpdateThread extends Thread{
         }
     }
     
-    private void update() {
-        if (startProcess) {
-            frameProcess();
-        }
-    }
-
-    private void frameProcess() {
-        //print("update frame process");
-
-        startProcess = false;
+    public void update() {
         recreateChunkMesh(testChunk);
 
-        syncThread.setFirstFrameDataCreated(true);
+        //game.setNewWorldData(oldWorldIndices != worldIndices || oldWorldVertices != worldVertices);
 
+//        if (oldWorldIndices != worldIndices || oldWorldVertices != worldVertices) {
+//            game.setNewWorldData(true);
+//        }
+//        else {
+//            game.setNewWorldData(false);
+//        }
 
+        //game.setNewWorldData(false);
 
-        if (test < 60) {
-            syncThread.setNewWorldData(true);
-            test ++;
-        }
-        else {
-            syncThread.setNewWorldData(false);
+        game.setNewWorldData(testChunk.blocks != oldChunkData);
 
-        }
+        oldChunkData = testChunk.blocks;
 
-
-
-
-
-        //syncThread.setNewWorldDataFlag(worldVertices != oldWorldVertices || worldIndices != oldWorldIndices);
-
-        oldWorldVertices = worldVertices;
-        oldWorldIndices = worldIndices;
-
-        //try { wait(); } catch (InterruptedException ignored) { }
-        syncThread.toggleUpdateThreadStatusFlag();
+//        oldWorldVertices = worldVertices;
+//        oldWorldIndices = worldIndices;
     }
 
     public void destroy() {

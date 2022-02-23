@@ -1,4 +1,4 @@
-package ca.benbingham.game.threads;
+package ca.benbingham.game.gameclasses;
 
 import ca.benbingham.engine.graphics.Texture;
 import ca.benbingham.engine.graphics.renderingobjects.ElementBufferObject;
@@ -9,19 +9,14 @@ import ca.benbingham.engine.graphics.shaders.ShaderProgram;
 import ca.benbingham.engine.io.Camera;
 import ca.benbingham.engine.io.Window;
 import ca.benbingham.engine.util.FileReader;
-import ca.benbingham.game.Quad;
-import ca.benbingham.game.worldstructure.Chunk;
+import ca.benbingham.game.worldstructure.Block;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
-import static ca.benbingham.engine.util.ArrayUtil.*;
 import static ca.benbingham.engine.util.Printing.print;
 import static ca.benbingham.engine.util.Printing.printError;
 import static org.lwjgl.glfw.GLFW.*;
@@ -33,9 +28,8 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 
-public class RenderThread extends Thread {
-    private SyncThread syncThread;
-    private UpdateThread updateThread;
+public class Renderer {
+    private Updater updater;
 
     private int height;
     private int width;
@@ -66,26 +60,11 @@ public class RenderThread extends Thread {
     // flags
     private boolean startProcess = false;
 
-    public RenderThread(SyncThread syncThread) {
-        this.syncThread = syncThread;
-        this.updateThread = syncThread.getUpdateThread();
-
-        this.game = syncThread.getGame();
+    public Renderer(Game game) {
+        this.game = game;
         this.height = game.getHeight();
         this.width = game.getWidth();
-    }
-
-    @Override
-    public void run() {
-        print("Render thread created");
-
-        init();
-
-        while(syncThread.isGameOpen()) {
-            update();
-        }
-
-        destroy();
+        this.updater = game.getUpdater();
     }
 
     private void compileShaders() {
@@ -206,25 +185,27 @@ public class RenderThread extends Thread {
         projectionMatrix = camera.getProjectionMatrix();
     }
 
-    private void init() {
+    public void init() {
         renderInit();
         compileShaders();
         compileTextures();
     }
 
-    private void update() {
-        //syncThread.setGameOpen(!glfwWindowShouldClose(window.getWindow()));
+    public void update() {
+        //game.setGameOpen(!glfwWindowShouldClose(window.getWindow()));
 
         if (glfwWindowShouldClose(window.getWindow())) {
-            //syncThread.setGameOpen(false);
-            syncThread.destroy(); // TODO needs to be removed at some point
+            game.setGameOpen(false);
         }
 
         camera.update();
 
-        if (startProcess) {
-            frameProcess();
+        if (game.isNewWorldData()) {
+            numberOfVertices = updater.getNumberOfVertices();
+            worldVertices = updater.getWorldVertexData();
+            worldIndices = updater.getWorldIndexData();
         }
+        render();
 
         glfwPollEvents();
 
@@ -254,34 +235,16 @@ public class RenderThread extends Thread {
 
         worldVAO.bind();
         worldVBO.bind();
-        //print(syncThread.isNewWorldData());
-        if (syncThread.isNewWorldData()) {
 
+        if (game.isNewWorldData()) {
+            print("a");
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, worldIndices);
             glBufferSubData(GL_ARRAY_BUFFER, 0, worldVertices);
-            print("a");
         }
 
         glDrawElements(GL_TRIANGLES, numberOfVertices * 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window.getWindow());
-    }
-
-    private void frameProcess() {
-        //print("render frame process");
-        startProcess = false;
-        if (syncThread.isFirstFrameDataCreated()) {
-            if (syncThread.isNewWorldData()) {
-                numberOfVertices = updateThread.getNumberOfVertices();
-
-                worldVertices = updateThread.getWorldVertexData();
-                worldIndices = updateThread.getWorldIndexData();
-            }
-            render();
-        }
-
-        //try { wait(); } catch (InterruptedException ignored) { }
-        syncThread.toggleRenderThreadStatusFlag();
     }
 
     public void destroy() {
