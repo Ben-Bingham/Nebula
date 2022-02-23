@@ -11,38 +11,22 @@ import static ca.benbingham.engine.util.ArrayUtil.*;
 import static ca.benbingham.engine.util.Printing.print;
 
 public class Updater {
-    private int width;
-    private int height;
-
     private Game game;
 
-    private float deltaTime = 0.0f;
-    private float lastFrame = 0.0f;
-
-    private boolean meshCalculated = false;
-    private int count;
-
     private float[] worldVertices;
-    private float[] oldWorldVertices;
 
     private int[] worldIndices;
-    private int[] oldWorldIndices;
 
     private Chunk testChunk;
 
-    int test = 0;
-
     private Block[][][] oldChunkData;
 
-    // flags
-    private boolean startProcess = false;
     private int numberOfVertices;
+
+    private boolean blockUpdate = true;
 
     public Updater(Game game) {
         this.game = game;
-
-        this.height = game.getHeight();
-        this.width = game.getWidth();
     }
 
     public void init() {
@@ -59,25 +43,14 @@ public class Updater {
     }
     
     public void update() {
-        recreateChunkMesh(testChunk);
-
-        //game.setNewWorldData(oldWorldIndices != worldIndices || oldWorldVertices != worldVertices);
-
-//        if (oldWorldIndices != worldIndices || oldWorldVertices != worldVertices) {
-//            game.setNewWorldData(true);
-//        }
-//        else {
-//            game.setNewWorldData(false);
-//        }
-
-        //game.setNewWorldData(false);
+        if (blockUpdate) {
+            recreateChunkMesh(testChunk);
+            blockUpdate = false;
+        }
 
         game.setNewWorldData(testChunk.blocks != oldChunkData);
 
         oldChunkData = testChunk.blocks;
-
-//        oldWorldVertices = worldVertices;
-//        oldWorldIndices = worldIndices;
     }
 
     public void destroy() {
@@ -118,8 +91,8 @@ public class Updater {
                     }
                 }
             }
-            numberOfVertices = count;
         }
+        numberOfVertices = count;
 
         worldVertices = floatListToArray(totalVertices);
         worldIndices = intListToArray(totalIndices);
@@ -132,14 +105,6 @@ public class Updater {
 
     public int[] getWorldIndexData() {
         return worldIndices;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public synchronized void setStartProcess(boolean startProcess) {
-        this.startProcess = startProcess;
     }
 
     public int getNumberOfVertices() {

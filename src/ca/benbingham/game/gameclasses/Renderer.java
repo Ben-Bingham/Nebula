@@ -57,9 +57,6 @@ public class Renderer {
 
     private int numberOfVertices;
 
-    // flags
-    private boolean startProcess = false;
-
     public Renderer(Game game) {
         this.game = game;
         this.height = game.getHeight();
@@ -192,8 +189,6 @@ public class Renderer {
     }
 
     public void update() {
-        //game.setGameOpen(!glfwWindowShouldClose(window.getWindow()));
-
         if (glfwWindowShouldClose(window.getWindow())) {
             game.setGameOpen(false);
         }
@@ -255,54 +250,5 @@ public class Renderer {
         textureAtlas.delete();
         testTexture.delete();
         defaultShaderProgram.delete();
-    }
-
-//    private int recreateWorldMesh() {
-//        int count = 0;
-//
-//        worldVAO.bind();
-//        worldVBO.bind();
-//
-//        Quad tempFace = new Quad();
-//
-//        totalIndices = new ArrayList<>();
-//        totalVertices = new ArrayList<>();
-//        float[] tempFaceVertices;
-//
-//        for (int i = 0; i < testChunk.getChunkSizeX(); i++) {
-//            for (int j = 0; j < testChunk.getChunkSizeY(); j++) {
-//                for (int k = 0; k < testChunk.getChunkSizeZ(); k++) {
-//                    for (int l = 0; l < testChunk.blocks[i][j][k].getFaces().length; l++) {
-//                        if (testChunk.blocks[i][j][k].getFaces()[l] != null) {
-//                            tempFace.importData(testChunk.blocks[i][j][k].getFaces()[l].convertToFloatArray());
-//
-//                            tempFace.translate(new Matrix4f().translation(i, j, k));
-//
-//                            for (int m = 0; m < tempFace.getIndices().length; m++) {
-//                                totalIndices.add(tempFace.getIndices()[m] + count * 4);
-//                            }
-//
-//                            for (int m = 0; m < tempFace.vertices.length; m++) {
-//                                tempFaceVertices = tempFace.vertices[m].getAsFloatArray();
-//                                for (int n = 0; n < 5; n++) {
-//                                    totalVertices.add(tempFaceVertices[n]);
-//                                }
-//                            }
-//
-//                            count++;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return count;
-//    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
-    public void setStartProcess(boolean startProcess) {
-        this.startProcess = startProcess;
     }
 }

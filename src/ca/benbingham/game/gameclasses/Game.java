@@ -41,16 +41,8 @@ public class Game {
         return height;
     }
 
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
     public int getWidth() {
         return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
     }
 
     public int getDefaultFOV() {
@@ -67,10 +59,6 @@ public class Game {
 
     public void setNewWorldData(boolean newWorldData) {
         this.newWorldData = newWorldData;
-    }
-
-    public boolean isGameOpen() {
-        return gameOpen;
     }
 
     public void setGameOpen(boolean gameOpen) {
