@@ -66,7 +66,7 @@ public class Camera {
         position = new Vector3f(0.0f, 0.0f, 3.0f);
 
         projectionMatrix = new Matrix4f()
-                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, 100f);
+                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, 10000f);
 
     }
     public Camera(Window window, float maxFOV, float mouseSensitivity, float movementSpeed, Vector3f spawnLocation) {
@@ -77,7 +77,7 @@ public class Camera {
         this.baseMovementSpeed = movementSpeed;
 
         this.lastMouseX = window.getWidth() / 2f;
-        this.lastMouseY = window.getHeight() /2f;
+        this.lastMouseY = window.getHeight() / 2f;
 
         yaw = -90f;
 

@@ -15,6 +15,8 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
+import java.util.Arrays;
+
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
 import static ca.benbingham.engine.util.Printing.print;
@@ -136,7 +138,7 @@ public class Renderer {
     private void renderInit() {
         window = new Window(height, width, "Nebula", true);
 
-        camera = new Camera(window, game.getDefaultFOV(), game.getMouseSensitivity(), game.getMovementSpeed(), new Vector3f(10, 258, 10));
+        camera = new Camera(window, game.getDefaultFOV(), game.getMouseSensitivity(), game.getMovementSpeed(), new Vector3f(0, 0, 0));
 
         window.create();
 
@@ -232,9 +234,11 @@ public class Renderer {
         worldVBO.bind();
 
         if (game.isNewWorldData()) {
-            print("a");
+            print("New World Data");
+
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, worldIndices);
             glBufferSubData(GL_ARRAY_BUFFER, 0, worldVertices);
+            game.setNewWorldData(false);
         }
 
         glDrawElements(GL_TRIANGLES, numberOfVertices * 6, GL_UNSIGNED_INT, 0);

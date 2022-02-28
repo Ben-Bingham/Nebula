@@ -4,9 +4,9 @@ public class World {
     private final int loadedChunksX = 9;
     private final int loadedChunksY = 9;
 
-    private Chunk[][] loadedChunks;
+    private Crumb[][] loadedCrumbs;
 
     public World() {
-        loadedChunks = new Chunk[loadedChunksX][loadedChunksY];
+        loadedCrumbs = new Crumb[loadedChunksX][loadedChunksY];
     }
 }

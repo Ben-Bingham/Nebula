@@ -4,11 +4,14 @@ package ca.benbingham.game.worldstructure;
 import ca.benbingham.game.Quad;
 import org.joml.Vector3f;
 
+import static ca.benbingham.engine.util.Printing.print;
+
 public class Block {
-    private final Vector3f location;
+    private final Vector3f relativeLocation;
+    private final Vector3f absoluteLocation;
 
     private final int numberOfFaces = 6;
-    private final Chunk parentChunk;
+    private final Crumb parentCrumb;
 
     private Block positiveYNeighbour;
     private Block negativeYNeighbour;
@@ -110,9 +113,14 @@ public class Block {
             0.0f, 0.0f,  // bottom-left
     };
 
-    public Block(Vector3f location, Chunk parentChunk) {
-        this.location = location;
-        this.parentChunk = parentChunk;
+    public Block(Vector3f relativeLocation, Crumb parentCrumb) {
+        this.relativeLocation = relativeLocation;
+        this.parentCrumb = parentCrumb;
+
+        absoluteLocation = new Vector3f();
+        absoluteLocation.x = relativeLocation.x + parentCrumb.getAbsoluteLocation().x * parentCrumb.getCrumbSizeX();
+        absoluteLocation.y = relativeLocation.y;
+        absoluteLocation.z = relativeLocation.z + parentCrumb.getAbsoluteLocation().y * parentCrumb.getCrumbSizeZ();
 
         faces = new Quad[numberOfFaces];
         for (int i = 0; i < faces.length; i++) {
@@ -121,32 +129,68 @@ public class Block {
     }
 
     public void setNeighbours() {
-        int posX = (int) location.x + 1;
-        int negX = (int) location.x - 1;
+        int posX = (int) relativeLocation.x + 1;
+        int negX = (int) relativeLocation.x - 1;
 
-        int posY = (int) location.y + 1;
-        int negY = (int) location.y - 1;
+        int posY = (int) relativeLocation.y + 1;
+        int negY = (int) relativeLocation.y - 1;
 
-        int posZ = (int) location.z + 1;
-        int negZ = (int) location.z - 1;
+        int posZ = (int) relativeLocation.z + 1;
+        int negZ = (int) relativeLocation.z - 1;
 
-        if (posX > parentChunk.getChunkSizeX() - 1) { this.positiveXNeighbour = null; }
-        else { this.positiveXNeighbour = parentChunk.blocks[posX][(int)location.y][(int)location.z]; }
+        if (posX > parentCrumb.getCrumbSizeX() - 1) {
 
-        if (negX < 0) { negativeXNeighbour = null; }
-        else { this.negativeXNeighbour = parentChunk.blocks[negX][(int)location.y][(int)location.z]; }
+            if (parentCrumb.getPositiveXNeighbour() != null) {
+                positiveXNeighbour = parentCrumb.getPositiveXNeighbour().blocks[0][(int) relativeLocation.y][(int) relativeLocation.z];
+            }
+            else if (parentCrumb.getParentChunk().getPositiveXNeighbour() != null) {
+                positiveXNeighbour = parentCrumb.getParentChunk().getPositiveXNeighbour().crumbs[0][(int) parentCrumb.getRelativeLocation().y].blocks[0][(int) relativeLocation.y][(int) relativeLocation.z];
+            }
+            else { this.positiveXNeighbour = null; }
+        }
+        else { this.positiveXNeighbour = parentCrumb.blocks[posX][(int) relativeLocation.y][(int) relativeLocation.z]; }
 
-        if (posY > parentChunk.getChunkSizeY() - 1) { this.positiveYNeighbour = null; }
-        else { this.positiveYNeighbour = parentChunk.blocks[(int)location.x][posY][(int)location.z]; }
+        if (negX < 0) {
+
+            if (parentCrumb.getNegativeXNeighbour() != null) {
+                negativeXNeighbour = parentCrumb.getNegativeXNeighbour().blocks[parentCrumb.getCrumbSizeX() - 1][(int) relativeLocation.y][(int) relativeLocation.z];
+            }
+            else if (parentCrumb.getParentChunk().getNegativeXNeighbour() != null) {
+                negativeXNeighbour = parentCrumb.getParentChunk().getNegativeXNeighbour().crumbs[parentCrumb.getParentChunk().getChunkSize() - 1][(int) parentCrumb.getRelativeLocation().y].blocks[parentCrumb.getCrumbSizeX() - 1][(int) relativeLocation.y][(int) relativeLocation.z];
+            }
+            else { this.negativeXNeighbour = null; }
+        }
+        else { this.negativeXNeighbour = parentCrumb.blocks[negX][(int) relativeLocation.y][(int) relativeLocation.z]; }
+
+        if (posY > parentCrumb.getCrumbSizeY() - 1) { this.positiveYNeighbour = null; }
+        else { this.positiveYNeighbour = parentCrumb.blocks[(int) relativeLocation.x][posY][(int) relativeLocation.z]; }
 
         if (negY < 0) { this.negativeYNeighbour = null; }
-        else { this.negativeYNeighbour = parentChunk.blocks[(int)location.x][negY][(int)location.z]; }
+        else { this.negativeYNeighbour = parentCrumb.blocks[(int) relativeLocation.x][negY][(int) relativeLocation.z]; }
 
-        if (posZ > parentChunk.getChunkSizeZ() - 1) { this.positiveZNeighbour = null; }
-        else { this.positiveZNeighbour = parentChunk.blocks[(int)location.x][(int)location.y][posZ]; }
+        if (posZ > parentCrumb.getCrumbSizeZ() - 1) {
 
-        if (negZ < 0) { this.negativeZNeighbour = null; }
-        else { this.negativeZNeighbour = parentChunk.blocks[(int)location.x][(int)location.y][negZ]; }
+            if (parentCrumb.getPositiveYNeighbour() != null) {
+                positiveZNeighbour = parentCrumb.getPositiveYNeighbour().blocks[(int) relativeLocation.x][(int) relativeLocation.y][0];
+            }
+            else if (parentCrumb.getParentChunk().getPositiveYNeighbour() != null) {
+                positiveZNeighbour = parentCrumb.getParentChunk().getPositiveYNeighbour().crumbs[(int) parentCrumb.getRelativeLocation().x][0].blocks[(int) relativeLocation.x][(int) relativeLocation.y][0];
+            }
+            else { this.positiveZNeighbour = null; }
+        }
+        else { this.positiveZNeighbour = parentCrumb.blocks[(int) relativeLocation.x][(int) relativeLocation.y][posZ]; }
+
+        if (negZ < 0) {
+
+            if (parentCrumb.getNegativeYNeighbour() != null) {
+                negativeZNeighbour = parentCrumb.getNegativeYNeighbour().blocks[(int) relativeLocation.x][(int) relativeLocation.y][parentCrumb.getCrumbSizeZ() - 1];
+            }
+            else if (parentCrumb.getParentChunk().getNegativeYNeighbour() != null) {
+                negativeZNeighbour = parentCrumb.getParentChunk().getNegativeYNeighbour().crumbs[(int) parentCrumb.getRelativeLocation().x][parentCrumb.getParentChunk().getChunkSize() - 1].blocks[(int) relativeLocation.x][(int) relativeLocation.y][parentCrumb.getCrumbSizeX() - 1];
+            }
+            else { this.negativeZNeighbour = null; }
+        }
+        else { this.negativeZNeighbour = parentCrumb.blocks[(int) relativeLocation.x][(int) relativeLocation.y][negZ]; }
     }
 
     public void determineVisibleFaces() {
@@ -188,5 +232,9 @@ public class Block {
 
     public Quad[] getFaces() {
         return faces;
+    }
+
+    public Vector3f getAbsoluteLocation() {
+        return absoluteLocation;
     }
 }
