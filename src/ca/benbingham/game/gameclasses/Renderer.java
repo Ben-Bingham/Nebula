@@ -9,7 +9,9 @@ import ca.benbingham.engine.graphics.shaders.ShaderProgram;
 import ca.benbingham.engine.io.Camera;
 import ca.benbingham.engine.io.Window;
 import ca.benbingham.engine.util.FileReader;
-import ca.benbingham.game.worldstructure.Block;
+import ca.benbingham.game.planetstructure.Chunk;
+
+import ca.benbingham.game.planetstructure.Mesh;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -19,7 +21,6 @@ import java.util.Arrays;
 
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
-import static ca.benbingham.engine.util.Printing.print;
 import static ca.benbingham.engine.util.Printing.printError;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -31,8 +32,6 @@ import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 
 public class Renderer {
-    private Updater updater;
-
     private int height;
     private int width;
     private ShaderProgram defaultShaderProgram;
@@ -52,18 +51,10 @@ public class Renderer {
     private Window window;
     private Game game;
 
-    private int count;
-
-    private float[] worldVertices;
-    private int[] worldIndices;
-
-    private int numberOfVertices;
-
     public Renderer(Game game) {
         this.game = game;
         this.height = game.getHeight();
         this.width = game.getWidth();
-        this.updater = game.getUpdater();
     }
 
     private void compileShaders() {
@@ -197,21 +188,10 @@ public class Renderer {
 
         camera.update();
 
-        if (game.isNewWorldData()) {
-            numberOfVertices = updater.getNumberOfVertices();
-            worldVertices = updater.getWorldVertexData();
-            worldIndices = updater.getWorldIndexData();
-        }
-        render();
+        game.setPlayerPosition(camera.getPosition());
 
-        glfwPollEvents();
+        swapBuffers();
 
-        if(glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window.getWindow(), true);
-        }
-    }
-
-    private void render() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -224,25 +204,30 @@ public class Renderer {
         defaultShaderProgram.uploadUniform("view", viewMatrix);
         defaultShaderProgram.uploadUniform("projection", projectionMatrix);
 
+        if(glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window.getWindow(), true);
+        }
+
+        glfwPollEvents();
+    }
+
+    public void renderChunk(Chunk chunk) {
+        worldVAO.bind();
+
+        modelMatrix = new Matrix4f().translate(chunk.getCoordinates().x * Chunk.xSize, 0, chunk.getCoordinates().y * Chunk.zSize);
+        defaultShaderProgram.uploadUniform("model", modelMatrix);
+
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, chunk.getMesh().getIndices());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, chunk.getMesh().getVertices());
+
+
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CW);
 
-        modelMatrix = new Matrix4f().translate(0, 0, 0);
-        defaultShaderProgram.uploadUniform("model", modelMatrix);
+        glDrawElements(GL_TRIANGLES, chunk.getMesh().getNumberOfVertices() * 6, GL_UNSIGNED_INT, 0);
+    }
 
-        worldVAO.bind();
-        worldVBO.bind();
-
-        if (game.isNewWorldData()) {
-            print("New World Data");
-
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, worldIndices);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, worldVertices);
-            game.setNewWorldData(false);
-        }
-
-        glDrawElements(GL_TRIANGLES, numberOfVertices * 6, GL_UNSIGNED_INT, 0);
-
+    public void swapBuffers() {
         glfwSwapBuffers(window.getWindow());
     }
 

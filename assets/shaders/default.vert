@@ -9,7 +9,16 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+float WorldCurvature(vec2 pos){
+    return dot(pos, pos) / 150;
+}
+
 void main() {
-    gl_Position = projection * view * model * vec4(position, 1.0);
+    vec4 vertexPos = projection * view * model * vec4(position, 1.0);
+
+    vec4 worldPostion = vertexPos;
+    worldPostion.y -= WorldCurvature(vertexPos.xz);
+
+    gl_Position = vertexPos;
     textureCoordinates = uv;
 }

@@ -38,4 +38,17 @@ public class ArrayUtil {
 
         return list;
     }
+
+    public static float[] combineTwoFloatArrays(float[] array1, float[] array2) {
+        float[] temp = new float[array1.length + array2.length];
+        for (int i = 0; i < array1.length; i++) {
+            temp[i] = array1[i];
+        }
+
+        for (int i = array1.length; i < array2.length + array1.length; i++) {
+            temp[i] = array2[i];
+        }
+
+        return temp;
+    }
 }

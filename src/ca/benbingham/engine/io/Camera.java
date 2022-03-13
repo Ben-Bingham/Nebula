@@ -3,7 +3,7 @@ package ca.benbingham.engine.io;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import static ca.benbingham.engine.util.Vector3fMath.*;
+import static ca.benbingham.engine.util.math.Vector3fMath.*;
 import static java.lang.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -49,26 +49,6 @@ public class Camera {
     private float lastFrame;
     private float deltaTime;
 
-    public Camera(Window window, float maxFOV, float mouseSensitivity, float movementSpeed) {
-        this.maxFOV = maxFOV;
-        this.FOV = maxFOV;
-        this.window = window;
-        this.mouseSensitivity = mouseSensitivity;
-        this.baseMovementSpeed = movementSpeed;
-
-        this.lastMouseX = window.getWidth() / 2f;
-        this.lastMouseY = window.getHeight() /2f;
-
-        yaw = -90f;
-
-        front = new Vector3f(0.0f, 0.0f, -1.0f);
-        worldUp = new Vector3f(0.0f, 1.0f, 0.0f);
-        position = new Vector3f(0.0f, 0.0f, 3.0f);
-
-        projectionMatrix = new Matrix4f()
-                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, 10000f);
-
-    }
     public Camera(Window window, float maxFOV, float mouseSensitivity, float movementSpeed, Vector3f spawnLocation) {
         this.maxFOV = maxFOV;
         this.FOV = maxFOV;

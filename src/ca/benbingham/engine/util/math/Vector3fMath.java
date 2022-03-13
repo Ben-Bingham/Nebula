@@ -1,4 +1,4 @@
-package ca.benbingham.engine.util;
+package ca.benbingham.engine.util.math;
 
 import org.joml.Vector3f;
 
