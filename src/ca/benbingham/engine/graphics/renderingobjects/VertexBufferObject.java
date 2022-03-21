@@ -1,5 +1,6 @@
 package ca.benbingham.engine.graphics.renderingobjects;
 
+import static ca.benbingham.engine.util.GLError.getOpenGLError;
 import static org.lwjgl.opengl.GL15.*;
 
 public class VertexBufferObject {
@@ -17,8 +18,12 @@ public class VertexBufferObject {
         glBufferData(GL_ARRAY_BUFFER, vertexArray, GL_STATIC_DRAW);
     }
 
-    public void bindVertexData(int size) {
+    public void setMaxDataSize(int size) {
         glBufferData(GL_ARRAY_BUFFER, size, GL_DYNAMIC_DRAW);
+    }
+
+    public void bindVertexData(int offset, float[] vertexArray) {
+        glBufferSubData(GL_ARRAY_BUFFER, offset, vertexArray);
     }
 
     public void unbind() {

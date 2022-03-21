@@ -5,6 +5,7 @@ import org.lwjgl.BufferUtils;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
+import static ca.benbingham.engine.util.GLError.getOpenGLError;
 import static ca.benbingham.engine.util.Printing.printError;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
@@ -53,11 +54,11 @@ public class Texture {
     }
 
     public void setStretchMode(int stretchMode) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, stretchMode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, stretchMode);
     }
 
     public void setShrinkMode(int shrinkMode) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shrinkMode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, shrinkMode);
     }
 
     public void generateMipmaps() {
@@ -73,4 +74,8 @@ public class Texture {
     }
 
     public void delete() { glDeleteTextures(texture);}
+
+    public int getTexture() {
+        return texture;
+    }
 }

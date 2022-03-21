@@ -16,9 +16,13 @@ float WorldCurvature(vec2 pos){
 void main() {
     vec4 vertexPos = projection * view * model * vec4(position, 1.0);
 
+    //round world
     vec4 worldPostion = vertexPos;
     worldPostion.y -= WorldCurvature(vertexPos.xz);
+    gl_Position = worldPostion;
 
-    gl_Position = vertexPos;
+    // flat world
+//    gl_Position = vertexPos;
+
     textureCoordinates = uv;
 }

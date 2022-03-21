@@ -17,8 +17,12 @@ public class ElementBufferObject {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, GL_STATIC_DRAW);
     }
 
-    public void bindIndexData(int size) {
+    public void setMaxDataSize(int size) {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, GL_DYNAMIC_DRAW);
+    }
+
+    public void bindIndexData(int offset, int[] indexArray) {
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, indexArray);
     }
 
     public void unbind() {

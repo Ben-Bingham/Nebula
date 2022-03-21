@@ -31,6 +31,8 @@ public class Block {
 
     private final Quad[] faces;
 
+    private boolean visibleFace;
+
     private static final float[] positiveXFace = new float[]{
             0.5f,  0.5f,  0.5f,   // top-left
             0.5f,  0.5f, -0.5f,   // top-right
@@ -131,7 +133,7 @@ public class Block {
         absoluteLocation.z = relativeLocation.z + chunkCords.y * Chunk.zSize;
     }
 
-    public void setNeighbours(Block[][][] chunk) {
+    public void setNeighbours(Block[][][] chunk, Block[][][] posXChunk, Block[][][] negXChunk, Block[][][] posYChunk, Block[][][] negYChunk) {
         int posX = (int) relativeLocation.x + 1;
         int negX = (int) relativeLocation.x - 1;
 
@@ -142,20 +144,20 @@ public class Block {
         int negZ = (int) relativeLocation.z - 1;
 
         if (posX > Chunk.xSize - 1) {
-            positiveXNeighbour = null;
+            positiveXNeighbour = posXChunk[0][(int) relativeLocation.y][(int) relativeLocation.z];
         }
         else {
             positiveXNeighbour = chunk[posX][(int) relativeLocation.y][(int) relativeLocation.z];
         }
 
         if (negX < 0) {
-            negativeXNeighbour = null;
+            negativeXNeighbour = negXChunk[Chunk.xSize - 1][(int) relativeLocation.y][(int) relativeLocation.z];
         }
         else {
             negativeXNeighbour = chunk[negX][(int) relativeLocation.y][(int) relativeLocation.z];
         }
 
-        if (posY > Chunk.xSize - 1) {
+        if (posY > Chunk.ySize - 1) {
             positiveYNeighbour = null;
         }
         else {
@@ -169,15 +171,68 @@ public class Block {
             negativeYNeighbour = chunk[(int) relativeLocation.x][negY][(int) relativeLocation.z];
         }
 
-        if (posZ > Chunk.xSize - 1) {
-            positiveZNeighbour = null;
+        if (posZ > Chunk.zSize - 1) {
+            positiveZNeighbour = posYChunk[(int) relativeLocation.x][(int) relativeLocation.y][0];
         }
         else {
             positiveZNeighbour = chunk[(int) relativeLocation.x][(int) relativeLocation.y][posZ];
         }
 
         if (negZ < 0) {
-            negativeZNeighbour = null;
+            negativeZNeighbour = posYChunk[(int) relativeLocation.x][(int) relativeLocation.y][Chunk.zSize - 1];
+        }
+        else {
+            negativeZNeighbour = chunk[(int) relativeLocation.x][(int) relativeLocation.y][negZ];
+        }
+    }
+
+    public void setNeighbours(Block[][][] chunk, Block posXNeighbour, Block negXNeighbour, Block posYNeighbour, Block negYNeighbour) {
+        int posX = (int) relativeLocation.x + 1;
+        int negX = (int) relativeLocation.x - 1;
+
+        int posY = (int) relativeLocation.y + 1;
+        int negY = (int) relativeLocation.y - 1;
+
+        int posZ = (int) relativeLocation.z + 1;
+        int negZ = (int) relativeLocation.z - 1;
+
+        if (posX > Chunk.xSize - 1) {
+            positiveXNeighbour = posXNeighbour;
+        }
+        else {
+            positiveXNeighbour = chunk[posX][(int) relativeLocation.y][(int) relativeLocation.z];
+        }
+
+        if (negX < 0) {
+            negativeXNeighbour = negXNeighbour;
+        }
+        else {
+            negativeXNeighbour = chunk[negX][(int) relativeLocation.y][(int) relativeLocation.z];
+        }
+
+        if (posY > Chunk.ySize - 1) {
+            positiveYNeighbour = null;
+        }
+        else {
+            positiveYNeighbour = chunk[(int) relativeLocation.x][posY][(int) relativeLocation.z];
+        }
+
+        if (negY < 0) {
+            negativeYNeighbour = null;
+        }
+        else {
+            negativeYNeighbour = chunk[(int) relativeLocation.x][negY][(int) relativeLocation.z];
+        }
+
+        if (posZ > Chunk.zSize - 1) {
+            positiveZNeighbour = posYNeighbour;
+        }
+        else {
+            positiveZNeighbour = chunk[(int) relativeLocation.x][(int) relativeLocation.y][posZ];
+        }
+
+        if (negZ < 0) {
+            negativeZNeighbour = negYNeighbour;
         }
         else {
             negativeZNeighbour = chunk[(int) relativeLocation.x][(int) relativeLocation.y][negZ];
@@ -185,25 +240,35 @@ public class Block {
     }
 
     public void determineVisibleFaces() {
-        if (this.positiveXNeighbour == null) { this.positiveXFaceVisibility = true; }
+        if (this.positiveXNeighbour == null || positiveXNeighbour.getName() == EBlockName.AIR) { this.positiveXFaceVisibility = true; }
         else { this.positiveXFaceVisibility = false; }
 
-        if (this.negativeXNeighbour == null) { this.negativeXFaceVisibility = true; }
+        if (this.negativeXNeighbour == null || negativeXNeighbour.getName() == EBlockName.AIR) { this.negativeXFaceVisibility = true; }
         else { this.negativeXFaceVisibility = false; }
 
-        if (this.positiveYNeighbour == null) { this.positiveYFaceVisibility = true; }
+        if (this.positiveYNeighbour == null || positiveYNeighbour.getName() == EBlockName.AIR) { this.positiveYFaceVisibility = true; }
         else { this.positiveYFaceVisibility = false; }
 
-        if (this.negativeYNeighbour == null) { this.negativeYFaceVisibility = true; }
+        if (this.negativeYNeighbour == null || negativeYNeighbour.getName() == EBlockName.AIR) { this.negativeYFaceVisibility = true; }
         else { this.negativeYFaceVisibility = false; }
 
-        if (this.positiveZNeighbour == null) { this.positiveZFaceVisibility = true; }
+        if (this.positiveZNeighbour == null || positiveZNeighbour.getName() == EBlockName.AIR) { this.positiveZFaceVisibility = true; }
         else { this.positiveZFaceVisibility = false; }
 
-        if (this.negativeZNeighbour == null) { this.negativeZFaceVisibility = true; }
+        if (this.negativeZNeighbour == null || negativeZNeighbour.getName() == EBlockName.AIR) { this.negativeZFaceVisibility = true; }
         else { this.negativeZFaceVisibility = false; }
 
         updateFaceArray();
+        determineVisibleFaceTotal();
+    }
+
+    private void determineVisibleFaceTotal() {
+        if (positiveXFaceVisibility && negativeXFaceVisibility && positiveYFaceVisibility && negativeYFaceVisibility && positiveZFaceVisibility && negativeZFaceVisibility) {
+            visibleFace = true;
+        }
+        else {
+            visibleFace = false;
+        }
     }
 
     public void updateFaceArray() {
@@ -225,9 +290,12 @@ public class Block {
         return faces;
     }
 
-
     public Vector3f getRelativeLocation() {
         return relativeLocation;
+    }
+
+    public EBlockName getName() {
+        return name;
     }
 
     @Override
@@ -236,5 +304,33 @@ public class Block {
                 "name=" + name +
                 ", relativeLocation=" + relativeLocation +
                 '}';
+    }
+
+    public void setPositiveYNeighbour(Block positiveYNeighbour) {
+        this.positiveYNeighbour = positiveYNeighbour;
+    }
+
+    public void setNegativeYNeighbour(Block negativeYNeighbour) {
+        this.negativeYNeighbour = negativeYNeighbour;
+    }
+
+    public void setPositiveXNeighbour(Block positiveXNeighbour) {
+        this.positiveXNeighbour = positiveXNeighbour;
+    }
+
+    public void setNegativeXNeighbour(Block negativeXNeighbour) {
+        this.negativeXNeighbour = negativeXNeighbour;
+    }
+
+    public void setPositiveZNeighbour(Block positiveZNeighbour) {
+        this.positiveZNeighbour = positiveZNeighbour;
+    }
+
+    public void setNegativeZNeighbour(Block negativeZNeighbour) {
+        this.negativeZNeighbour = negativeZNeighbour;
+    }
+
+    public boolean isVisibleFace() {
+        return visibleFace;
     }
 }
