@@ -14,6 +14,8 @@ public class Quad {
             2, 3, 0
     };
 
+    private float[] floatArrayOfQuad;
+
     private final int positionLength = 3;
     private final int textureCoordinateLength = 2;
     private final int vertexLength = positionLength + textureCoordinateLength;
@@ -39,6 +41,10 @@ public class Quad {
         }
 
         return array;
+    }
+
+    public void createFloatArrayForQuad() {
+        floatArrayOfQuad = convertToFloatArray();
     }
 
     public void importData(float[] data) {
@@ -94,5 +100,9 @@ public class Quad {
 
     public int[] getIndices() {
         return indices;
+    }
+
+    public float[] getFloatArrayOfQuad() {
+        return floatArrayOfQuad;
     }
 }

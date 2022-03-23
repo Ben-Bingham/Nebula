@@ -1,13 +1,23 @@
 package ca.benbingham.game.gameclasses;
 
+import ca.benbingham.engine.util.Timer;
+import ca.benbingham.game.blocks.BlockList;
+import ca.benbingham.game.planetstructure.Block;
 import ca.benbingham.game.planetstructure.Chunk;
 
+import ca.benbingham.game.planetstructure.Mesh;
 import ca.benbingham.game.planetstructure.planetgeneration.ChunkMeshGenerator;
+import ca.benbingham.game.planetstructure.planetgeneration.TerrainGenerator;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 
+import java.time.chrono.ThaiBuddhistEra;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import static ca.benbingham.engine.util.GLError.getOpenGLError;
 import static ca.benbingham.engine.util.Printing.print;
+import static ca.benbingham.engine.util.math.Util.snapToRange;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 public class Game {
@@ -33,53 +43,83 @@ public class Game {
     private float lastFrame;
     private float deltaTime;
 
-    //private Chunk testChunk;
-    private Chunk[][] testChunks;
+    private Chunk testChunk;
+    //private Chunk[][] testChunks;
+    //private Block[][][][][] worldBlocks;
+    private short[][][][][] worldBlocks;
+    private BlockList masterBlockList;
 
-    private float timer = 0;
+    private Timer timer = new Timer();
 
-    //private TerrainGenerator generator;
+    private TerrainGenerator generator;
 
     public void start() {
         init();
 
-//        // test chunk
-//        testChunk = new Chunk();
-//
-//        testChunk.setCoordinates(new Vector2i(0, 0));
-//
+        // test chunk
+
+        testChunk = new Chunk();
+
+        testChunk.setCoordinates(new Vector2i(0, 0));
+
 //        ChunkMeshGenerator chunkMeshGenerator = new ChunkMeshGenerator(testChunk.getCoordinates());
 //        chunkMeshGenerator.run();
-//
-//        testChunk.setVBOData(0, chunkMeshGenerator.getMesh().getVertices());
-//        testChunk.setEBOData(0, chunkMeshGenerator.getMesh().getIndices());
-//        testChunk.setNumberOfVertices(chunkMeshGenerator.getMesh().getNumberOfVertices());
+
+        testChunk.setBlocks(generator.createShortArrayForChunk(testChunk.getCoordinates()));
+        timer.startInterval();
+        Mesh mesh = generator.createChunkMesh(testChunk, null, null, null, null);
+        timer.endInterval();
+        //print(Arrays.toString(mesh.getIndices()));
+        //print(mesh.getNumberOfVertices());
+
+        testChunk.setVBOData(0, mesh.getVertices());
+        testChunk.setEBOData(0, mesh.getIndices());
+        testChunk.setNumberOfVertices(mesh.getNumberOfVertices());
+//        testChunk.setVBOData(0, renderer.vertices);
+//        testChunk.setEBOData(0, renderer.cubeIndices);
+//        testChunk.setNumberOfVertices(36);
+
+
+
 
 
         // test chunks
-        testChunks = new Chunk[renderDistance][renderDistance];
+//        testChunks = new Chunk[renderDistance][renderDistance];
+//        worldBlocks = new short[renderDistance][renderDistance][Chunk.xSize][Chunk.ySize][Chunk.zSize];
+//
+//        TerrainGenerator terrainGenerator = new TerrainGenerator(masterBlockList);
+//        Mesh mesh;
+//
+//        for (int i = 0; i < renderDistance; i++) {
+//            for (int j = 0; j < renderDistance; j++) {
+//                timer.startInterval();
+//                testChunks[i][j] = new Chunk();
+//                testChunks[i][j].setCoordinates(new Vector2i(i, j));
+//
+//                worldBlocks[i][j] = terrainGenerator.createBlockArrayForChunk(new Vector2i(i, j)); // Takes about 1 milliseconds
+//
+//                int posX, negX, posY, negY;
+//                posX = snapToRange(i + 1, 0, renderDistance - 1); //TODO method needs to be changed
+//                negX = snapToRange(i - 1, 0, renderDistance - 1);
+//                posY = snapToRange(j + 1, 0, renderDistance - 1);
+//                negY = snapToRange(j - 1, 0, renderDistance - 1);
+//
+//                mesh = terrainGenerator.createChunkMesh(worldBlocks[i][j], worldBlocks[posX][j], worldBlocks[negX][j], worldBlocks[i][posY], worldBlocks[i][negY]); // Takes about 20 milliseconds
+//
+//
+//
+//                testChunks[i][j].setVBOData(0, mesh.getVertices()); // Takes about 1 milliseconds
+//                testChunks[i][j].setEBOData(0, mesh.getIndices());
+//                testChunks[i][j].setNumberOfVertices(mesh.getNumberOfVertices());
+//                timer.endInterval();
+//            }
+//        }
 
-        for (int i = 0; i < renderDistance; i++) {
-            for (int j = 0; j < renderDistance; j++) {
-                testChunks[i][j] = new Chunk();
-
-                testChunks[i][j].setCoordinates(new Vector2i(i, j));
-
-                ChunkMeshGenerator chunkMeshGenerator = new ChunkMeshGenerator(testChunks[i][j].getCoordinates());
-                chunkMeshGenerator.run();
-
-                testChunks[i][j].setVBOData(0, chunkMeshGenerator.getMesh().getVertices());
-                testChunks[i][j].setEBOData(0, chunkMeshGenerator.getMesh().getIndices());
-                testChunks[i][j].setNumberOfVertices(chunkMeshGenerator.getMesh().getNumberOfVertices());
-            }
-        }
-
+        timer.printAverageTimes("Create chunk.");
 
         while (gameOpen) {
             deltaTime = (float) (glfwGetTime() - lastFrame);
             lastFrame = (float) glfwGetTime();
-
-            timer += glfwGetTime();
 
             renderer.firstUpdate();
 
@@ -95,11 +135,13 @@ public class Game {
 
             //renderer.renderChunk(testChunk);
 
-            for (int i = 0; i < renderDistance; i++) {
-                for (int j = 0; j < renderDistance; j++) {
-                    renderer.renderChunk(testChunks[i][j]);
-                }
-            }
+//            for (int i = 0; i < renderDistance; i++) {
+//                for (int j = 0; j < renderDistance; j++) {
+//                    renderer.renderChunk(testChunks[i][j]);
+//                }
+//            }
+
+            renderer.renderChunk(testChunk);
 
 //            for (int i = 0; i < renderDistance; i++) {
 //                for (int j = 0; j < renderDistance; j++) {
@@ -185,9 +227,12 @@ public class Game {
             }
         }
 
+        masterBlockList = new BlockList();
+        masterBlockList.init();
+
         //recreateLoadedChunkArray();
 
-        //generator = new TerrainGenerator();
+        generator = new TerrainGenerator(masterBlockList);
     }
 
 //    private void recreateLoadedChunkArray() {
@@ -241,9 +286,10 @@ public class Game {
         //testChunk.delete();
         for (int i = 0; i < renderDistance; i++) {
             for (int j = 0; j < renderDistance; j++) {
-                testChunks[i][j].delete();
+                //testChunks[i][j].delete();
             }
         }
+        testChunk.delete();
     }
 
     public int getHeight() {

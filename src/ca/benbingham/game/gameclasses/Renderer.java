@@ -46,19 +46,14 @@ public class Renderer {
     private Texture textureAtlas;
     private CubeMap skybox;
 
-    // world
-//    private VertexArrayObject worldVAO;
-//    private VertexBufferObject worldVBO;
-//    private ElementBufferObject worldEBO;
-
     // skybox
     private VertexArrayObject skyboxVAO;
     private VertexBufferObject skyboxVBO;
 
     // cube
-//    private VertexArrayObject cubeVAO;
-//    private VertexBufferObject cubeVBO;
-//    private ElementBufferObject cubeEBO;
+    private VertexArrayObject cubeVAO;
+    private VertexBufferObject cubeVBO;
+    private ElementBufferObject cubeEBO;
 
     private Matrix4f projectionMatrix;
     private Matrix4f viewMatrix;
@@ -71,7 +66,7 @@ public class Renderer {
     private float deltaTime;
     private float lastFrame = 0;
 
-    float[] vertices = {
+    public float[] vertices = {
             -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
             0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
@@ -115,7 +110,7 @@ public class Renderer {
             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-    private int[] cubeIndices = {
+    public int[] cubeIndices = {
             0, 1, 2,
             3, 4, 5,
 
@@ -282,26 +277,19 @@ public class Renderer {
 
     private void compileTextures() {
         // texture setup
-
         testTexture = new Texture();
-        testTexture.bindImageData("assets/images/container2.png", true);
-        testTexture.generateMipmaps();
+        testTexture.bindImageData("assets/images/stone.png", true);
         testTexture.setWrapSettings(GL_REPEAT);
-        testTexture.setShrinkMode(GL_LINEAR_MIPMAP_NEAREST);
+        testTexture.setShrinkMode(GL_NEAREST);
         testTexture.setStretchMode(GL_NEAREST);
 
-
-
-
-
-
         // atlas
-//        textureAtlas = new Texture();
-//        textureAtlas.bindImageData("assets/images/textureAtlas.png", true);
-//        textureAtlas.generateMipmaps();
-//        textureAtlas.setWrapSettings(GL_REPEAT);
-//        textureAtlas.setShrinkMode(GL_NEAREST);
-//        textureAtlas.setStretchMode(GL_NEAREST);
+        textureAtlas = new Texture();
+        textureAtlas.bindImageData("assets/images/textureAtlas.png", true);
+        textureAtlas.generateMipmaps();
+        textureAtlas.setWrapSettings(GL_REPEAT);
+        textureAtlas.setShrinkMode(GL_NEAREST);
+        textureAtlas.setStretchMode(GL_NEAREST);
 
         glActiveTexture(GL_TEXTURE0);
         testTexture.bind();
@@ -350,51 +338,28 @@ public class Renderer {
         int uvSize = 2;
         int vertexSizeBytes = (positionSize + uvSize);
 
-        // world
-//        worldVAO = new VertexArrayObject();
-//        worldVBO = new VertexBufferObject();
-//        worldEBO = new ElementBufferObject();
-//
-//        worldVAO.bind();
-//        worldVBO.bind();
-//        worldVBO.setMaxDataSize(Integer.MAX_VALUE); //TODO Can be lowered (probably)
-//        worldEBO.bind();
-//        worldEBO.setMaxDataSize(Integer.MAX_VALUE);
-//
-//        createAttributePointer(0, positionSize, vertexSizeBytes, 0);
-//        enableAttributePointer(0);
-//        createAttributePointer(1, uvSize, vertexSizeBytes, positionSize);
-//        enableAttributePointer(1);
-//
-//        defaultShaderProgram.use();
-//        defaultShaderProgram.uploadUniform("texture1", 0);
-//
-//        worldVAO.unbind();
-//        worldVBO.unbind();
-//        worldEBO.unbind();
-
         // cube
-//        cubeVAO = new VertexArrayObject();
-//        cubeVBO = new VertexBufferObject();
-//        cubeEBO = new ElementBufferObject();
-//
-//        cubeVAO.bind();
-//        cubeVBO.bind();
-//        cubeVBO.bindVertexData(vertices);
-//        cubeEBO.bind();
-//        cubeEBO.bindIndexData(cubeIndices);
-//
-//        createAttributePointer(0, positionSize, vertexSizeBytes, 0);
-//        enableAttributePointer(0);
-//        createAttributePointer(1, uvSize, vertexSizeBytes, positionSize);
-//        enableAttributePointer(1);
-//
-//        defaultShaderProgram.use();
-//        defaultShaderProgram.uploadUniform("texture1", 0);
-//
-//        cubeVAO.unbind();
-//        cubeVBO.unbind();
-//        cubeEBO.unbind();
+        cubeVAO = new VertexArrayObject();
+        cubeVBO = new VertexBufferObject();
+        cubeEBO = new ElementBufferObject();
+
+        cubeVAO.bind();
+        cubeVBO.bind();
+        cubeVBO.bindVertexData(vertices);
+        cubeEBO.bind();
+        cubeEBO.bindIndexData(cubeIndices);
+
+        createAttributePointer(0, positionSize, vertexSizeBytes, 0);
+        enableAttributePointer(0);
+        createAttributePointer(1, uvSize, vertexSizeBytes, positionSize);
+        enableAttributePointer(1);
+
+        defaultShaderProgram.use();
+        defaultShaderProgram.uploadUniform("texture1", 0);
+
+        cubeVAO.unbind();
+        cubeVBO.unbind();
+        cubeEBO.unbind();
 
         // skybox
         vertexSizeBytes = positionSize;
@@ -477,28 +442,14 @@ public class Renderer {
 
     public void renderChunk(Chunk chunk) {
         glDepthFunc(GL_LESS);
-//        worldVAO.bind();
-//        worldVBO.bind();
-//        worldEBO.bind();
 
         modelMatrix = new Matrix4f().translate(chunk.getCoordinates().x * Chunk.xSize, 0, chunk.getCoordinates().y * Chunk.zSize);
 
         defaultShaderProgram.use();
         defaultShaderProgram.uploadUniform("model", modelMatrix);
 
-        //glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, chunk.getMesh().getIndices());
-//        worldEBO.bindVertexData(0, chunk.getMesh().getIndices());
-//        worldVBO.bindVertexData(0, chunk.getMesh().getVertices());
-
-        //chunk.getVAO().bind();
-//        chunk.getVBO().bind();
-//        chunk.getEBO().bind();
-
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CW);
-
-//        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
 
         chunk.getVAO().bind();
 
@@ -513,15 +464,12 @@ public class Renderer {
 
     public void delete() {
         glfwTerminate();
-//        worldEBO.delete();
-//        worldVBO.delete();
-//        worldVAO.delete();
         skyboxVBO.delete();
         skyboxVAO.delete();
+        cubeVBO.delete();
+        cubeEBO.delete();
+        cubeVAO.delete();
 
-
-
-//        textureAtlas.delete();
         testTexture.delete();
         skybox.delete();
 

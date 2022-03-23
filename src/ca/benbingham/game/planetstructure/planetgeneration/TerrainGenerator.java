@@ -1,102 +1,123 @@
 package ca.benbingham.game.planetstructure.planetgeneration;
 
 import ca.benbingham.game.Quad;
+import ca.benbingham.game.blocks.BlockList;
 import ca.benbingham.game.planetstructure.Block;
 import ca.benbingham.game.planetstructure.Chunk;
 import ca.benbingham.game.planetstructure.Mesh;
 import ca.benbingham.game.planetstructure.enums.EBlockName;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
-import org.joml.Vector3f;
 
 import java.util.ArrayList;
 
 import static ca.benbingham.engine.util.ArrayUtil.floatListToArray;
 import static ca.benbingham.engine.util.ArrayUtil.intListToArray;
-import static ca.benbingham.engine.util.Printing.print;
 
 public class TerrainGenerator {
-    public Mesh createChunkMesh(Vector2i chunkCords) {
-        Block[][][] blocks = createBlockArrayForChunk(chunkCords);
-        Block positiveXNeighbour;
-        Block negativeXNeighbour;
-        Block positiveYNeighbour;
-        Block negativeYNeighbour;
+    private final BlockList blockList;
+    private final short stoneID;
+    private final short airID;
 
-        for (int i = 0; i < Chunk.xSize; i++) {
-            for (int j = 0; j < Chunk.ySize; j++) {
-                for (int k = 0; k < Chunk.zSize; k++) {
-                    positiveXNeighbour = findBlockAtPosition(chunkCords, new Vector3f(i + 1, j, k)); //TODO Only works because of the basics of the algorithm
-                    negativeXNeighbour = findBlockAtPosition(chunkCords, new Vector3f(i - 1, j, k));
-                    positiveYNeighbour = findBlockAtPosition(chunkCords, new Vector3f(i, j, k + 1));
-                    negativeYNeighbour = findBlockAtPosition(chunkCords, new Vector3f(i, j, k - 1));
+    public TerrainGenerator(BlockList masterBlockList) {
+        this.blockList = masterBlockList;
 
-                    blocks[i][j][k].setNeighbours(blocks, positiveXNeighbour, negativeXNeighbour, positiveYNeighbour, negativeYNeighbour);
-                    blocks[i][j][k].determineVisibleFaces();
-                }
-            }
-        }
-
-        return createMeshFromBlocksArray(blocks);
+        stoneID = blockList.getBlockIDWithName(EBlockName.STONE);
+        airID = blockList.getBlockIDWithName(EBlockName.AIR);
     }
 
-    private Block[][][] createBlockArrayForChunk(Vector2i chunkCords) {
-        Block[][][] blocks = new Block[Chunk.xSize][Chunk.ySize][Chunk.zSize];
-
-        int val = 60;
-
-        for (int i = 0; i < Chunk.xSize; i++) {
-            for (int j = 0; j < Chunk.ySize; j++) {
-                for (int k = 0; k < Chunk.zSize; k++) {
-                    //val = (int) Math.ceil(-0.5 * (i^2 - 65));
-                    if (j < val) {
-                        blocks[i][j][k] = new Block(EBlockName.CONTAINER, new Vector3f(i, j, k), chunkCords);
-                    } else {
-                        blocks[i][j][k] = new Block(EBlockName.AIR, new Vector3f(i, j, k), chunkCords);
-                    }
-                }
-            }
-        }
-
-        return blocks;
-    }
-
-    private Block findBlockAtPosition(Vector2i chunkCords, Vector3f cords) {
-        if (cords.y < 60) {
-            return new Block(EBlockName.CONTAINER, cords, chunkCords);
-        }
-        else {
-            return new Block(EBlockName.AIR, cords, chunkCords);
-        }
-    }
-
-    private Mesh createMeshFromBlocksArray(Block[][][] blocks) {
-        Mesh mesh = new Mesh();
-
-        int count = 0;
-
+    public Mesh createChunkMesh(Chunk chunk, Chunk posXChunk, Chunk negXChunk, Chunk posYChunk, Chunk negYChunk) {
+        int posX, negX, posY, negY, posZ, negZ;
+        short posXNeighbour, negXNeighbour, posYNeighbour, negYNeighbour, posZNeighbour, negZNeighbour;
+        Block currentBlock;
         Quad currentFace = new Quad();
-
+        Mesh chunkMesh = new Mesh();
+        int count = 0;
         ArrayList<Integer> totalIndices = new ArrayList<>();
         ArrayList<Float> totalVertices = new ArrayList<>();
-
-        Vector3f blockRelativeLocation;
-
         float[] tempFaceVertices;
 
         for (int i = 0; i < Chunk.xSize; i++) {
             for (int j = 0; j < Chunk.ySize; j++) {
                 for (int k = 0; k < Chunk.zSize; k++) {
-                    if (blocks[i][j][k].getName() != EBlockName.AIR) {
-                        if (!blocks[i][j][k].isVisibleFace())
 
-                        for (int l = 0; l < blocks[i][j][k].getFaces().length; l++) {
-                            if (blocks[i][j][k].getFaces()[l] != null) {
-                                currentFace.importData(blocks[i][j][k].getFaces()[l].convertToFloatArray());
+                    posX = i + 1;
+                    negX = i - 1;
+                    posY = j + 1;
+                    negY = j - 1;
+                    posZ = k + 1;
+                    negZ = k - 1;
 
-                                blockRelativeLocation = blocks[i][j][k].getRelativeLocation();
-                                currentFace.translate(new Matrix4f().translation(blockRelativeLocation.x, blockRelativeLocation.y, blockRelativeLocation.z));
+                    if (posX > Chunk.xSize - 1) {
+                        if (posXChunk != null) {
+                            posXNeighbour = posXChunk.getBlocks()[0][j][k];
+                        }
+                        else {
+                            posXNeighbour = airID;
+                        }
+                    }
+                    else {
+                        posXNeighbour = chunk.getBlocks()[posX][j][k];
+                    }
 
+                    if (negX < 0) {
+                        if (negXChunk != null) {
+                            negXNeighbour = negXChunk.getBlocks()[Chunk.xSize - 1][j][k];
+                        }
+                        else {
+                            negXNeighbour = airID;
+                        }
+                    }
+                    else {
+                        negXNeighbour = chunk.getBlocks()[negX][j][k];
+                    }
+
+
+                    if (posY > Chunk.ySize - 1) {
+                        posYNeighbour = airID;
+                    }
+                    else {
+                        posYNeighbour = chunk.getBlocks()[i][posY][k];
+                    }
+
+                    if (negY < 0) {
+                        negYNeighbour = airID;
+                    }
+                    else {
+                        negYNeighbour = chunk.getBlocks()[i][negY][k];
+                    }
+
+
+                    if (posZ > Chunk.zSize - 1) {
+                        if (posYChunk != null) {
+                            posZNeighbour = posYChunk.getBlocks()[i][j][0];
+                        }
+                        else {
+                            posZNeighbour = airID;
+                        }
+                    }
+                    else {
+                        posZNeighbour = chunk.getBlocks()[i][j][posZ];
+                    }
+
+                    if (negZ < 0) {
+                        if (negYChunk != null) {
+                            negZNeighbour = negYChunk.getBlocks()[i][j][Chunk.zSize - 1];
+                        }
+                        else {
+                            negZNeighbour = airID;
+                        }
+                    } else {
+                        negZNeighbour = chunk.getBlocks()[i][j][negZ];
+                    }
+
+                    if (chunk.getBlocks()[i][j][k] != airID) {
+                        currentBlock = blockList.getBlockWithID(chunk.getBlocks()[i][j][k]);
+                        for (int l = 0; l < currentBlock.getFaces().length; l++) {
+                            if (l == 0 && posXNeighbour == airID || l == 1 && negXNeighbour == airID || l == 2 && posYNeighbour == airID || l == 3 && negYNeighbour == airID || l == 4 && posZNeighbour == airID || l == 5 && negZNeighbour == airID) {
+                                currentFace.importData(currentBlock.getFaces()[l].getFloatArrayOfQuad());
+
+                                currentFace.translate(new Matrix4f().translation(i, j, k));
 
                                 for (int m = 0; m < currentFace.getIndices().length; m++) {
                                     totalIndices.add(currentFace.getIndices()[m] + count * 4);
@@ -113,16 +134,35 @@ public class TerrainGenerator {
                             }
                         }
                     }
+
                 }
             }
         }
 
-        mesh.setNumberOfVertices(count);
-        mesh.setVertexData(floatListToArray(totalVertices));
-        mesh.setIndexData(intListToArray(totalIndices));
+        chunkMesh.setNumberOfVertices(count);
+        chunkMesh.setVertexData(floatListToArray(totalVertices));
+        chunkMesh.setIndexData(intListToArray(totalIndices));
 
-        //print("Chunk created");
+        return chunkMesh;
+    }
 
-        return mesh;
+    public short[][][] createShortArrayForChunk(Vector2i chunkCords) {
+        short[][][] blocks = new short[Chunk.xSize][Chunk.ySize][Chunk.zSize];
+        int val = 60;
+
+        for (int i = 0; i < Chunk.xSize; i++) {
+            for (int j = 0; j < Chunk.ySize; j++) {
+                for (int k = 0; k < Chunk.zSize; k++) {
+                    //val = (int) Math.ceil(-0.5 * (i^2 - 65));
+                    if (j < val) {
+                        blocks[i][j][k] = stoneID;
+                    } else {
+                        blocks[i][j][k] = airID;
+                    }
+                }
+            }
+        }
+
+        return blocks;
     }
 }

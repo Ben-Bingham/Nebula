@@ -1,0 +1,4 @@
+Need a super basic array of bytes 1 to 3 per block
+-one stores the id of the block it is.
+-one stores info particular to the block ie: wool color or orientation (maybe not this one)
+-one stores weather or not the block has another information which would be stored in a short list per chunk.

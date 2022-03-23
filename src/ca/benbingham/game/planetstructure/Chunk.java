@@ -5,33 +5,28 @@ import ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject;
 import ca.benbingham.engine.graphics.renderingobjects.VertexBufferObject;
 import org.joml.Vector2i;
 
+import java.util.ArrayList;
+
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
-import static ca.benbingham.engine.util.GLError.getOpenGLError;
 
 public class Chunk {
-    //private Mesh mesh;
     private Vector2i coordinates;
-    private boolean blockUpdate;
+    private boolean blockUpdate; //TODO
 
     public static final int xSize = 16;
     public static final int ySize = 256;
     public static final int zSize = 16;
-
-    private boolean[] subChunkVisibility;
 
     private VertexArrayObject VAO;
     private VertexBufferObject VBO;
     private ElementBufferObject EBO;
     private int numberOfVertices;
 
-    private boolean hasMesh = false;
+    private short[][][] blocks;
+    private ArrayList<Block> extraBlockData; //TODO
 
     public Chunk() {
-        int numberOfSubChunks = ySize / 16;
-        subChunkVisibility = new boolean[numberOfSubChunks];
-
-
         VAO = new VertexArrayObject();
         VBO = new VertexBufferObject();
         EBO = new ElementBufferObject();
@@ -40,8 +35,10 @@ public class Chunk {
         VBO.bind();
         VBO.setMaxDataSize(ySize * xSize * zSize * 36);
 
+
         EBO.bind();
         EBO.setMaxDataSize(ySize * xSize * zSize * 36);
+
         int positionSize = 3;
         int uvSize = 2;
         int vertexSizeBytes = (positionSize + uvSize);
@@ -51,15 +48,9 @@ public class Chunk {
         createAttributePointer(1, uvSize, vertexSizeBytes, positionSize);
         enableAttributePointer(1);
 
+        extraBlockData = new ArrayList<>();
+        blocks = new short[xSize][ySize][zSize];
     }
-
-//    public Mesh getMesh() {
-//        return mesh;
-//    }
-//
-//    public void setMesh(Mesh mesh) {
-//        this.mesh = mesh;
-//    }
 
     public Vector2i getCoordinates() {
         return coordinates;
@@ -69,24 +60,8 @@ public class Chunk {
         this.coordinates = coordinates;
     }
 
-    public boolean isBlockUpdate() {
-        return blockUpdate;
-    }
-
-    public void setBlockUpdate(boolean blockUpdate) {
-        this.blockUpdate = blockUpdate;
-    }
-
     public VertexArrayObject getVAO() {
         return VAO;
-    }
-
-    public VertexBufferObject getVBO() {
-        return VBO;
-    }
-
-    public ElementBufferObject getEBO() {
-        return EBO;
     }
 
     public void setVBOData(int offset, float[] data) {
@@ -105,16 +80,16 @@ public class Chunk {
         this.numberOfVertices = numberOfVertices;
     }
 
-    public void setHasMesh(boolean hasMesh) {
-        this.hasMesh = hasMesh;
-    }
-
-    public boolean hasMesh() {
-        return hasMesh;
-    }
-
     public int getNumberOfVertices() {
         return numberOfVertices;
+    }
+
+    public short[][][] getBlocks() {
+        return blocks;
+    }
+
+    public void setBlocks(short[][][] blocks) {
+        this.blocks = blocks;
     }
 
     public void delete() {
