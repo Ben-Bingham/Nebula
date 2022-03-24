@@ -153,7 +153,7 @@ public class TerrainGenerator {
         for (int i = 0; i < Chunk.xSize; i++) {
             for (int j = 0; j < Chunk.ySize; j++) {
                 for (int k = 0; k < Chunk.zSize; k++) {
-                    //val = (int) Math.ceil(-0.5 * (i^2 - 65));
+                    val = (int) Math.ceil((chunkCords.x ^ 2) - (chunkCords.y ^ 2));
                     if (j < val) {
                         blocks[i][j][k] = stoneID;
                     } else {

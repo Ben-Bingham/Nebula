@@ -314,7 +314,7 @@ public class Renderer {
     private void renderInit() {
         window = new Window(height, width, "Nebula", true);
 
-        camera = new Camera(window, game.getDefaultFOV(), game.getMouseSensitivity(), game.getMovementSpeed(), new Vector3f(0, 62, 0));
+        camera = new Camera(window, game.getDefaultFOV(), game.getMouseSensitivity(), game.getMovementSpeed(), new Vector3f(0, 62, 0), game.getRenderDistance() * (float) ((Chunk.xSize + Chunk.zSize) / 2));
 
         window.create();
 
@@ -460,6 +460,10 @@ public class Renderer {
 
     public void swapBuffers() {
         glfwSwapBuffers(window.getWindow());
+    }
+
+    public Camera getCamera() {
+        return camera;
     }
 
     public void delete() {

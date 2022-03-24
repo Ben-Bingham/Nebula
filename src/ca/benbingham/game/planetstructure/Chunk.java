@@ -13,6 +13,7 @@ import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.e
 public class Chunk {
     private Vector2i coordinates;
     private boolean blockUpdate; //TODO
+    private boolean needsMesh = true;
 
     public static final int xSize = 16;
     public static final int ySize = 256;
@@ -92,9 +93,24 @@ public class Chunk {
         this.blocks = blocks;
     }
 
+    public boolean isNeedsMesh() {
+        return needsMesh;
+    }
+
+    public void setNeedsMesh(boolean needsMesh) {
+        this.needsMesh = needsMesh;
+    }
+
     public void delete() {
         VAO.delete();
         VBO.delete();
         EBO.delete();
+    }
+
+    @Override
+    public String toString() {
+        return "Chunk{" +
+                "coordinates=" + coordinates +
+                '}';
     }
 }

@@ -2,7 +2,6 @@ package ca.benbingham.game.gameclasses;
 
 import ca.benbingham.engine.util.Timer;
 import ca.benbingham.game.blocks.BlockList;
-import ca.benbingham.game.planetstructure.Block;
 import ca.benbingham.game.planetstructure.Chunk;
 
 import ca.benbingham.game.planetstructure.Mesh;
@@ -11,13 +10,7 @@ import ca.benbingham.game.planetstructure.planetgeneration.TerrainGenerator;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 
-import java.time.chrono.ThaiBuddhistEra;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import static ca.benbingham.engine.util.GLError.getOpenGLError;
-import static ca.benbingham.engine.util.Printing.print;
-import static ca.benbingham.engine.util.math.Util.snapToRange;
+import static ca.benbingham.engine.util.math.Util.determineIfOnEdgeOfGrid;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 public class Game {
@@ -36,17 +29,13 @@ public class Game {
     private Vector2i playerChunk;
     private Vector2i lastPlayerChunk;
     private Chunk[][] loadedChunks;
-    private int renderDistance = 4;
+    private int renderDistance = 16;
 
     private ChunkMeshGenerator[][] chunkMeshGenerators;
 
     private float lastFrame;
     private float deltaTime;
 
-    private Chunk testChunk;
-    //private Chunk[][] testChunks;
-    //private Block[][][][][] worldBlocks;
-    private short[][][][][] worldBlocks;
     private BlockList masterBlockList;
 
     private Timer timer = new Timer();
@@ -55,67 +44,6 @@ public class Game {
 
     public void start() {
         init();
-
-        // test chunk
-
-        testChunk = new Chunk();
-
-        testChunk.setCoordinates(new Vector2i(0, 0));
-
-//        ChunkMeshGenerator chunkMeshGenerator = new ChunkMeshGenerator(testChunk.getCoordinates());
-//        chunkMeshGenerator.run();
-
-        testChunk.setBlocks(generator.createShortArrayForChunk(testChunk.getCoordinates()));
-        timer.startInterval();
-        Mesh mesh = generator.createChunkMesh(testChunk, null, null, null, null);
-        timer.endInterval();
-        //print(Arrays.toString(mesh.getIndices()));
-        //print(mesh.getNumberOfVertices());
-
-        testChunk.setVBOData(0, mesh.getVertices());
-        testChunk.setEBOData(0, mesh.getIndices());
-        testChunk.setNumberOfVertices(mesh.getNumberOfVertices());
-//        testChunk.setVBOData(0, renderer.vertices);
-//        testChunk.setEBOData(0, renderer.cubeIndices);
-//        testChunk.setNumberOfVertices(36);
-
-
-
-
-
-        // test chunks
-//        testChunks = new Chunk[renderDistance][renderDistance];
-//        worldBlocks = new short[renderDistance][renderDistance][Chunk.xSize][Chunk.ySize][Chunk.zSize];
-//
-//        TerrainGenerator terrainGenerator = new TerrainGenerator(masterBlockList);
-//        Mesh mesh;
-//
-//        for (int i = 0; i < renderDistance; i++) {
-//            for (int j = 0; j < renderDistance; j++) {
-//                timer.startInterval();
-//                testChunks[i][j] = new Chunk();
-//                testChunks[i][j].setCoordinates(new Vector2i(i, j));
-//
-//                worldBlocks[i][j] = terrainGenerator.createBlockArrayForChunk(new Vector2i(i, j)); // Takes about 1 milliseconds
-//
-//                int posX, negX, posY, negY;
-//                posX = snapToRange(i + 1, 0, renderDistance - 1); //TODO method needs to be changed
-//                negX = snapToRange(i - 1, 0, renderDistance - 1);
-//                posY = snapToRange(j + 1, 0, renderDistance - 1);
-//                negY = snapToRange(j - 1, 0, renderDistance - 1);
-//
-//                mesh = terrainGenerator.createChunkMesh(worldBlocks[i][j], worldBlocks[posX][j], worldBlocks[negX][j], worldBlocks[i][posY], worldBlocks[i][negY]); // Takes about 20 milliseconds
-//
-//
-//
-//                testChunks[i][j].setVBOData(0, mesh.getVertices()); // Takes about 1 milliseconds
-//                testChunks[i][j].setEBOData(0, mesh.getIndices());
-//                testChunks[i][j].setNumberOfVertices(mesh.getNumberOfVertices());
-//                timer.endInterval();
-//            }
-//        }
-
-        timer.printAverageTimes("Create chunk.");
 
         while (gameOpen) {
             deltaTime = (float) (glfwGetTime() - lastFrame);
@@ -127,71 +55,17 @@ public class Game {
             playerChunk.y = (int) Math.ceil(playerPosition.z / Chunk.zSize);
 
             if (playerChunk.x != lastPlayerChunk.x || playerChunk.y != lastPlayerChunk.y) { // Player moves between chunks
-                //recreateLoadedChunkArray();
+                recreateLoadedChunkArray();
             }
 
             lastPlayerChunk.x = playerChunk.x;
             lastPlayerChunk.y = playerChunk.y;
 
-            //renderer.renderChunk(testChunk);
-
-//            for (int i = 0; i < renderDistance; i++) {
-//                for (int j = 0; j < renderDistance; j++) {
-//                    renderer.renderChunk(testChunks[i][j]);
-//                }
-//            }
-
-            renderer.renderChunk(testChunk);
-
-//            for (int i = 0; i < renderDistance; i++) {
-//                for (int j = 0; j < renderDistance; j++) {
-//                    if (chunkMeshGenerators[i][j] != null) {
-//                        if (chunkMeshGenerators[i][j].isDone()) {
-//                            if (chunkMeshGenerators[i][j].getChunkCords().x == loadedChunks[i][j].getCoordinates().x && chunkMeshGenerators[i][j].getChunkCords().y == loadedChunks[i][j].getCoordinates().y) {
-//                                loadedChunks[i][j] = new Chunk();
-//                                loadedChunks[i][j].setCoordinates(chunkMeshGenerators[i][j].getChunkCords());
-//                                loadedChunks[i][j].setVBOData(0, chunkMeshGenerators[i][j].getMesh().getVertices());
-//                                loadedChunks[i][j].setEBOData(0, chunkMeshGenerators[i][j].getMesh().getIndices());
-//                                loadedChunks[i][j].setNumberOfVertices(chunkMeshGenerators[i][j].getMesh().getNumberOfVertices());
-//                                loadedChunks[i][j].setHasMesh(true);
-//
-//                                //loadedChunks[i][j] = chunkMeshGenerators[i][j].getChunk();
-//                            }
-////                            chunkMeshGenerators[i][j].getChunk().setVBOData(0, chunkMeshGenerators[i][j].getChunk().getMesh().getVertices());
-////                            chunkMeshGenerators[i][j].getChunk().setEBOData(0, chunkMeshGenerators[i][j].getChunk().getMesh().getIndices());
-//
-//                            chunkMeshGenerators[i][j].kill();
-//
-//                            if (i == 0 && j == 0) {
-//                                print("It took: " + timer + " seconds."); //This brokey TODO
-//                                timer = 0;
-//                            }
-//                            chunkMeshGenerators[i][j] = null;
-//                        }
-//                    }
-//                }
-//            }
-//
-//            for (int i = 0; i < renderDistance; i++) {
-//                for (int j = 0; j < renderDistance; j++) {
-//                    if (loadedChunks[i][j].isBlockUpdate()) {
-//                        generateChunk(loadedChunks[i][j].getCoordinates(), i, j);
-////                        chunkMeshGenerators[i][j] = new ChunkMeshGenerator(loadedChunks[i][j].getCoordinates());
-////                        chunkMeshGenerators[i][j].start();
-//                        //loadedChunks[i][j].setMesh(generator.createChunkMesh(loadedChunks[i][j].getCoordinates()));
-//                        //loadedChunks[i][j].setBlockUpdate(false);
-//                    }
-//                    else if (!loadedChunks[i][j].hasMesh()) {
-//                        generateChunk(loadedChunks[i][j].getCoordinates(), i, j);
-////                        chunkMeshGenerators[i][j] = new ChunkMeshGenerator(loadedChunks[i][j].getCoordinates());
-////                        chunkMeshGenerators[i][j].start();
-//                        //loadedChunks[i][j].setMesh(generator.createChunkMesh(loadedChunks[i][j].getCoordinates()));
-//                    }
-//                    if (loadedChunks[i][j].hasMesh()) {
-//                        renderer.renderChunk(loadedChunks[i][j]);
-//                    }
-//                }
-//            }
+            for (int i = 0; i < renderDistance; i++) {
+                for (int j = 0; j < renderDistance; j++) {
+                    renderer.renderChunk(loadedChunks[i][j]);
+                }
+            }
 
             renderer.lastUpdate();
         }
@@ -199,15 +73,50 @@ public class Game {
         delete();
     }
 
-//    private void generateChunk(Vector2i chunkCord, int i, int j) {
-//        int x = chunkCord.x;
-//        int y = chunkCord.y;
-//        if (chunkMeshGenerators[i][j] == null) {
-//            chunkMeshGenerators[i][j] = new ChunkMeshGenerator(new Vector2i(x, y));
-//            //chunkMeshGenerators[i][j].setChunk(new Chunk());
-//            chunkMeshGenerators[i][j].start();
-//        }
-//    }
+    private void generateChunkMesh(Chunk[][] chunkArray, int i, int j) {
+        timer.startInterval();
+        Mesh mesh;
+        int posX, negX, posY, negY;
+        Chunk posXChunk, negXChunk, posYChunk, negYChunk;
+        posX = i + 1;
+        negX = i - 1;
+        posY = j + 1;
+        negY = j - 1;
+        try {
+            posXChunk = chunkArray[posX][j];
+        }
+        catch (IndexOutOfBoundsException e) {
+            posXChunk = null;
+        }
+
+        try {
+            negXChunk = chunkArray[negX][j];
+        }
+        catch (IndexOutOfBoundsException e) {
+            negXChunk = null;
+        }
+
+        try {
+            posYChunk = chunkArray[i][posY];
+        }
+        catch (IndexOutOfBoundsException e) {
+            posYChunk = null;
+        }
+
+        try {
+            negYChunk = chunkArray[i][negY];
+        }
+        catch (IndexOutOfBoundsException e) {
+            negYChunk = null;
+        }
+
+        mesh = generator.createChunkMesh(chunkArray[i][j], posXChunk, negXChunk, posYChunk, negYChunk);
+
+        chunkArray[i][j].setVBOData(0, mesh.getVertices());
+        chunkArray[i][j].setEBOData(0, mesh.getIndices());
+        chunkArray[i][j].setNumberOfVertices(mesh.getNumberOfVertices());
+        timer.endInterval();
+    }
 
     private void init() {
         renderer = new Renderer(this);
@@ -222,7 +131,7 @@ public class Game {
 
         for (int i = 0; i < renderDistance; i++) {
             for (int j = 0; j < renderDistance; j++) {
-                //loadedChunks[i][j] = new Chunk();
+                loadedChunks[i][j] = new Chunk();
                 chunkMeshGenerators[i][j] = null;
             }
         }
@@ -230,66 +139,103 @@ public class Game {
         masterBlockList = new BlockList();
         masterBlockList.init();
 
-        //recreateLoadedChunkArray();
-
         generator = new TerrainGenerator(masterBlockList);
+        recreateLoadedChunkArray();
     }
+    private void recreateLoadedChunkArray() {
+        /*
+        oldLoadedChunks = loadedChunks;
 
-//    private void recreateLoadedChunkArray() {
-//        Vector2i[][] newChunkCords = new Vector2i[renderDistance][renderDistance];
-//        Chunk[][] newLoadedChunks = new Chunk[renderDistance][renderDistance];
-//        int renderDistanceHalf = renderDistance / 2;
-//
-//        //loadedChunks[renderDistanceHalf][renderDistanceHalf].setCoordinates(playerChunk);
-//        newChunkCords[renderDistanceHalf][renderDistanceHalf] = playerChunk;
-//
-//        int xDifference = playerChunk.x - renderDistanceHalf;
-//        int yDifference = playerChunk.y - renderDistanceHalf;
-//
-//        for (int i = 0; i < renderDistance; i++) {
-//            for (int j = 0; j < renderDistance; j++) {
-//                if (newChunkCords[i][j] != playerChunk) {
-//                    newChunkCords[i][j] = (new Vector2i(i + xDifference, j + yDifference)); // TODO might need to swap i and j or x and y
-//                }
-//            }
-//        }
-//
-//        for (int i = 0; i < renderDistance; i++) {
-//            for (int j = 0; j < renderDistance; j++) {
-//
-//                for (int k = 0; k < renderDistance; k++) {
-//                    for (int l = 0; l < renderDistance; l++) {
-//                        if (loadedChunks[i][j].getCoordinates() != null) {
-//                            if (loadedChunks[i][j].getCoordinates().x == newChunkCords[k][l].x && loadedChunks[i][j].getCoordinates().y == newChunkCords[k][l].y) {
-//                                newLoadedChunks[k][l] = loadedChunks[i][j];
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        for (int i = 0; i < renderDistance; i++) {
-//            for (int j = 0; j < renderDistance; j++) {
-//                if (newLoadedChunks[i][j] == null) {
-//                    newLoadedChunks[i][j] = new Chunk();
-//                    newLoadedChunks[i][j].setCoordinates(newChunkCords[i][j]);
-//                }
-//            }
-//        }
-//
-//        loadedChunks = newLoadedChunks;
-//    }
+        find player location
+        create array of chunk cords with player position at the center
+        for all chunks in oldLoadedChunks:
+            see if oldLoadedChunks[i][j] is not null and if there is a spot on newChunkCords that matches their coordinates
+            if yes:
+                copy over their data to that location on newLoadedChunks
+                if the chunk was on an edge either before or after the move:
+                if Yes:
+                    mark that its mesh needs to be remade
+                if no:
+                    do nothing
+            if no:
+                do nothing
+        for all chunks in newLoadedChunks:
+            if null:
+                instantiate a chunk instance
+                give the chunk chunkCords (from created array)
+                create a short array of blocks for the chunk
+        for all chunks in newLoadedChunks:
+            if it needs a new mesh:
+                create a mesh for it
+
+        loadedChunks = newLoadedChunks;
+         */
+
+        Chunk[][] oldLoadedChunks = loadedChunks;
+        Chunk[][] newLoadedChunks = new Chunk[renderDistance][renderDistance];
+        Vector2i[][] newChunkCords = new Vector2i[renderDistance][renderDistance];
+        int renderDistanceHalf = renderDistance / 2;
+
+        newChunkCords[renderDistanceHalf][renderDistanceHalf] = playerChunk;
+
+        int xDifference = playerChunk.x - renderDistanceHalf;
+        int yDifference = playerChunk.y - renderDistanceHalf;
+
+        for (int i = 0; i < renderDistance; i++) {
+            for (int j = 0; j < renderDistance; j++) {
+                if (newChunkCords[i][j] != playerChunk) {
+                    newChunkCords[i][j] = (new Vector2i(i + xDifference, j + yDifference)); // TODO might need to swap i and j or x and y
+                }
+            }
+        }
+
+        for (int i = 0; i < renderDistance; i++) {
+            for (int j = 0; j < renderDistance; j++) {
+
+                if (oldLoadedChunks[i][j] != null && oldLoadedChunks[i][j].getCoordinates() != null) {
+
+                    for (int k = 0; k < renderDistance; k++) {
+                        for (int l = 0; l < renderDistance; l++) {
+                            if (oldLoadedChunks[i][j].getCoordinates().x == newChunkCords[k][l].x && oldLoadedChunks[i][j].getCoordinates().y == newChunkCords[k][l].y) {
+                                newLoadedChunks[k][l] = oldLoadedChunks[i][j];
+                                if (determineIfOnEdgeOfGrid(new Vector2i(i, j), renderDistance, renderDistance) || determineIfOnEdgeOfGrid(new Vector2i(k, l), renderDistance, renderDistance)) {
+                                    newLoadedChunks[k][l].setNeedsMesh(true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < renderDistance; i++) {
+            for (int j = 0; j < renderDistance; j++) {
+                if (newLoadedChunks[i][j] == null) {
+                    newLoadedChunks[i][j] = new Chunk();
+                    newLoadedChunks[i][j].setCoordinates(newChunkCords[i][j]);
+                    newLoadedChunks[i][j].setBlocks(generator.createShortArrayForChunk(newLoadedChunks[i][j].getCoordinates()));
+                }
+            }
+        }
+
+        for (int i = 0; i < renderDistance; i++) {
+            for (int j = 0; j < renderDistance; j++) {
+                if (newLoadedChunks[i][j].isNeedsMesh()) {
+                    generateChunkMesh(newLoadedChunks, i, j);
+                }
+            }
+        }
+        timer.printAverageTimes("Chunk created.");
+        loadedChunks = newLoadedChunks;
+    }
 
     public void delete() {
         renderer.delete();
-        //testChunk.delete();
         for (int i = 0; i < renderDistance; i++) {
             for (int j = 0; j < renderDistance; j++) {
-                //testChunks[i][j].delete();
+                loadedChunks[i][j].delete();
             }
         }
-        testChunk.delete();
     }
 
     public int getHeight() {

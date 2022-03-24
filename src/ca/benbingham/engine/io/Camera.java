@@ -49,7 +49,7 @@ public class Camera {
     private float lastFrame;
     private float deltaTime;
 
-    public Camera(Window window, float maxFOV, float mouseSensitivity, float movementSpeed, Vector3f spawnLocation) {
+    public Camera(Window window, float maxFOV, float mouseSensitivity, float movementSpeed, Vector3f spawnLocation, float zFar) {
         this.maxFOV = maxFOV;
         this.FOV = maxFOV;
         this.window = window;
@@ -225,4 +225,6 @@ public class Camera {
     public void setMovementSpeed(float movementSpeed) {
         this.movementSpeed = movementSpeed;
     }
+
+
 }
