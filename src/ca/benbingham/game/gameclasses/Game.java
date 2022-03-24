@@ -10,6 +10,7 @@ import ca.benbingham.game.planetstructure.planetgeneration.TerrainGenerator;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 
+import static ca.benbingham.engine.util.Printing.print;
 import static ca.benbingham.engine.util.math.Util.determineIfOnEdgeOfGrid;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
@@ -29,7 +30,7 @@ public class Game {
     private Vector2i playerChunk;
     private Vector2i lastPlayerChunk;
     private Chunk[][] loadedChunks;
-    private int renderDistance = 16;
+    private int renderDistance = 12;
 
     private ChunkMeshGenerator[][] chunkMeshGenerators;
 
@@ -41,6 +42,7 @@ public class Game {
     private Timer timer = new Timer();
 
     private TerrainGenerator generator;
+    private int numb = 0;
 
     public void start() {
         init();
@@ -74,7 +76,7 @@ public class Game {
     }
 
     private void generateChunkMesh(Chunk[][] chunkArray, int i, int j) {
-        timer.startInterval();
+
         Mesh mesh;
         int posX, negX, posY, negY;
         Chunk posXChunk, negXChunk, posYChunk, negYChunk;
@@ -115,7 +117,6 @@ public class Game {
         chunkArray[i][j].setVBOData(0, mesh.getVertices());
         chunkArray[i][j].setEBOData(0, mesh.getIndices());
         chunkArray[i][j].setNumberOfVertices(mesh.getNumberOfVertices());
-        timer.endInterval();
     }
 
     private void init() {
@@ -143,33 +144,6 @@ public class Game {
         recreateLoadedChunkArray();
     }
     private void recreateLoadedChunkArray() {
-        /*
-        oldLoadedChunks = loadedChunks;
-
-        find player location
-        create array of chunk cords with player position at the center
-        for all chunks in oldLoadedChunks:
-            see if oldLoadedChunks[i][j] is not null and if there is a spot on newChunkCords that matches their coordinates
-            if yes:
-                copy over their data to that location on newLoadedChunks
-                if the chunk was on an edge either before or after the move:
-                if Yes:
-                    mark that its mesh needs to be remade
-                if no:
-                    do nothing
-            if no:
-                do nothing
-        for all chunks in newLoadedChunks:
-            if null:
-                instantiate a chunk instance
-                give the chunk chunkCords (from created array)
-                create a short array of blocks for the chunk
-        for all chunks in newLoadedChunks:
-            if it needs a new mesh:
-                create a mesh for it
-
-        loadedChunks = newLoadedChunks;
-         */
 
         Chunk[][] oldLoadedChunks = loadedChunks;
         Chunk[][] newLoadedChunks = new Chunk[renderDistance][renderDistance];
@@ -188,6 +162,7 @@ public class Game {
                 }
             }
         }
+
 
         for (int i = 0; i < renderDistance; i++) {
             for (int j = 0; j < renderDistance; j++) {
@@ -218,15 +193,20 @@ public class Game {
             }
         }
 
+        //timer.startInterval();
         for (int i = 0; i < renderDistance; i++) {
             for (int j = 0; j < renderDistance; j++) {
                 if (newLoadedChunks[i][j].isNeedsMesh()) {
                     generateChunkMesh(newLoadedChunks, i, j);
+                    newLoadedChunks[i][j].setNeedsMesh(false);
                 }
             }
         }
-        timer.printAverageTimes("Chunk created.");
+        //timer.endInterval();
         loadedChunks = newLoadedChunks;
+
+        //timer.printAverageTimes("Created Chunk");
+        //timer.resetTimes();
     }
 
     public void delete() {

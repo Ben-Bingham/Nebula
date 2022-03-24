@@ -15,10 +15,7 @@ public class ChunkMeshGenerator extends Thread{
 
     @Override
     public void run() {
-        //generator = new TerrainGenerator();
 
-        //mesh = generator.createChunkMesh(generator.createBlockArrayForChunk(chunkCords), chunkCords);
-        isDone = true;
     }
 
     public void kill() {

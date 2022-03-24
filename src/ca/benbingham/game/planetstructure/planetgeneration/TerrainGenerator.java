@@ -1,5 +1,6 @@
 package ca.benbingham.game.planetstructure.planetgeneration;
 
+import ca.benbingham.engine.util.Timer;
 import ca.benbingham.game.Quad;
 import ca.benbingham.game.blocks.BlockList;
 import ca.benbingham.game.planetstructure.Block;
@@ -18,6 +19,7 @@ public class TerrainGenerator {
     private final BlockList blockList;
     private final short stoneID;
     private final short airID;
+    private Timer timer = new Timer();
 
     public TerrainGenerator(BlockList masterBlockList) {
         this.blockList = masterBlockList;
@@ -27,7 +29,6 @@ public class TerrainGenerator {
     }
 
     public Mesh createChunkMesh(Chunk chunk, Chunk posXChunk, Chunk negXChunk, Chunk posYChunk, Chunk negYChunk) {
-        int posX, negX, posY, negY, posZ, negZ;
         short posXNeighbour, negXNeighbour, posYNeighbour, negYNeighbour, posZNeighbour, negZNeighbour;
         Block currentBlock;
         Quad currentFace = new Quad();
@@ -40,15 +41,7 @@ public class TerrainGenerator {
         for (int i = 0; i < Chunk.xSize; i++) {
             for (int j = 0; j < Chunk.ySize; j++) {
                 for (int k = 0; k < Chunk.zSize; k++) {
-
-                    posX = i + 1;
-                    negX = i - 1;
-                    posY = j + 1;
-                    negY = j - 1;
-                    posZ = k + 1;
-                    negZ = k - 1;
-
-                    if (posX > Chunk.xSize - 1) {
+                    if ((i + 1) > Chunk.xSize - 1) {
                         if (posXChunk != null) {
                             posXNeighbour = posXChunk.getBlocks()[0][j][k];
                         }
@@ -57,10 +50,10 @@ public class TerrainGenerator {
                         }
                     }
                     else {
-                        posXNeighbour = chunk.getBlocks()[posX][j][k];
+                        posXNeighbour = chunk.getBlocks()[(i + 1)][j][k];
                     }
 
-                    if (negX < 0) {
+                    if ((i - 1) < 0) {
                         if (negXChunk != null) {
                             negXNeighbour = negXChunk.getBlocks()[Chunk.xSize - 1][j][k];
                         }
@@ -69,26 +62,26 @@ public class TerrainGenerator {
                         }
                     }
                     else {
-                        negXNeighbour = chunk.getBlocks()[negX][j][k];
+                        negXNeighbour = chunk.getBlocks()[(i - 1)][j][k];
                     }
 
 
-                    if (posY > Chunk.ySize - 1) {
+                    if ((j + 1) > Chunk.ySize - 1) {
                         posYNeighbour = airID;
                     }
                     else {
-                        posYNeighbour = chunk.getBlocks()[i][posY][k];
+                        posYNeighbour = chunk.getBlocks()[i][(j + 1)][k];
                     }
 
-                    if (negY < 0) {
+                    if ((j - 1) < 0) {
                         negYNeighbour = airID;
                     }
                     else {
-                        negYNeighbour = chunk.getBlocks()[i][negY][k];
+                        negYNeighbour = chunk.getBlocks()[i][(j - 1)][k];
                     }
 
 
-                    if (posZ > Chunk.zSize - 1) {
+                    if ((k + 1) > Chunk.zSize - 1) {
                         if (posYChunk != null) {
                             posZNeighbour = posYChunk.getBlocks()[i][j][0];
                         }
@@ -97,10 +90,10 @@ public class TerrainGenerator {
                         }
                     }
                     else {
-                        posZNeighbour = chunk.getBlocks()[i][j][posZ];
+                        posZNeighbour = chunk.getBlocks()[i][j][(k + 1)];
                     }
 
-                    if (negZ < 0) {
+                    if ((k - 1) < 0) {
                         if (negYChunk != null) {
                             negZNeighbour = negYChunk.getBlocks()[i][j][Chunk.zSize - 1];
                         }
@@ -108,13 +101,13 @@ public class TerrainGenerator {
                             negZNeighbour = airID;
                         }
                     } else {
-                        negZNeighbour = chunk.getBlocks()[i][j][negZ];
+                        negZNeighbour = chunk.getBlocks()[i][j][(k - 1)];
                     }
 
                     if (chunk.getBlocks()[i][j][k] != airID) {
                         currentBlock = blockList.getBlockWithID(chunk.getBlocks()[i][j][k]);
                         for (int l = 0; l < currentBlock.getFaces().length; l++) {
-                            if (l == 0 && posXNeighbour == airID || l == 1 && negXNeighbour == airID || l == 2 && posYNeighbour == airID || l == 3 && negYNeighbour == airID || l == 4 && posZNeighbour == airID || l == 5 && negZNeighbour == airID) {
+                            if ((l == 0 && posXNeighbour == airID) || (l == 1 && negXNeighbour == airID) || (l == 2 && posYNeighbour == airID) || (l == 3 && negYNeighbour == airID) || (l == 4 && posZNeighbour == airID) || (l == 5 && negZNeighbour == airID)) {
                                 currentFace.importData(currentBlock.getFaces()[l].getFloatArrayOfQuad());
 
                                 currentFace.translate(new Matrix4f().translation(i, j, k));
@@ -138,7 +131,6 @@ public class TerrainGenerator {
                 }
             }
         }
-
         chunkMesh.setNumberOfVertices(count);
         chunkMesh.setVertexData(floatListToArray(totalVertices));
         chunkMesh.setIndexData(intListToArray(totalIndices));
@@ -153,7 +145,7 @@ public class TerrainGenerator {
         for (int i = 0; i < Chunk.xSize; i++) {
             for (int j = 0; j < Chunk.ySize; j++) {
                 for (int k = 0; k < Chunk.zSize; k++) {
-                    val = (int) Math.ceil((chunkCords.x ^ 2) - (chunkCords.y ^ 2));
+                    //val = (int) Math.ceil((chunkCords.x ^ 2) - (chunkCords.y ^ 2));
                     if (j < val) {
                         blocks[i][j][k] = stoneID;
                     } else {
