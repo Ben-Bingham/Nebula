@@ -12,13 +12,13 @@ import ca.benbingham.engine.io.Window;
 import ca.benbingham.engine.util.FileReader;
 import ca.benbingham.game.planetstructure.Chunk;
 
+import ca.benbingham.game.planetstructure.ChunkDebugging;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
-import org.lwjgl.system.Callback;
 
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
@@ -41,6 +41,7 @@ public class Renderer {
 
     private ShaderProgram defaultShaderProgram;
     private ShaderProgram skyboxShaderProgram;
+    private ShaderProgram debugShaderProgram;
 
     private Texture testTexture;
     private Texture textureAtlas;
@@ -49,6 +50,13 @@ public class Renderer {
     // skybox
     private VertexArrayObject skyboxVAO;
     private VertexBufferObject skyboxVBO;
+
+    // debug chunk lines
+    private VertexArrayObject debugChunkLinesVAO;
+    private VertexBufferObject debugChunkLinesVBO;
+
+    private VertexArrayObject debugSecondaryChunkLinesVAO;
+    private VertexBufferObject debugSecondaryChunkLinesVBO;
 
     // cube
     private VertexArrayObject cubeVAO;
@@ -65,6 +73,8 @@ public class Renderer {
 
     private float deltaTime;
     private float lastFrame = 0;
+
+    private ChunkDebugging chunkDebugging;
 
     public float[] vertices = {
             -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -175,6 +185,8 @@ public class Renderer {
             1.0f, -1.0f,  1.0f
     };
 
+    private short chunkDebugLines = 0;
+
     public Renderer(Game game) {
         this.game = game;
         this.height = game.getHeight();
@@ -182,10 +194,16 @@ public class Renderer {
     }
 
     private void compileShaders() {
+        defaultShader();
+        skyboxShader();
+        debugShader();
+    }
+
+    private void defaultShader() {
         // default vertex shader
         String vertexSource = "";
         try {
-            vertexSource = FileReader.readFile("/shaders/default.vert"); // TODO use lwjgl features instead
+            vertexSource = FileReader.readFile("/shaders/default/default.vert"); // TODO use lwjgl features instead
         }
         catch (Exception e) {
             printError("Default vertex shader could not be read from file");
@@ -200,7 +218,7 @@ public class Renderer {
         // default fragment shader
         String fragmentSource = "";
         try {
-            fragmentSource = FileReader.readFile("/shaders/default.frag");
+            fragmentSource = FileReader.readFile("/shaders/default/default.frag");
         }
         catch (Exception e) {
             printError("Default fragment shader could not be read from file");
@@ -227,11 +245,13 @@ public class Renderer {
 
         vertexShader.delete();
         fragmentShader.delete();
+    }
 
+    private void skyboxShader() {
         // skybox vertex shader
         String skyboxVertexSource = "";
         try {
-            skyboxVertexSource = FileReader.readFile("/shaders/skybox.vert"); // TODO use lwjgl features instead
+            skyboxVertexSource = FileReader.readFile("/shaders/skybox/skybox.vert"); // TODO use lwjgl features instead
         }
         catch (Exception e) {
             printError("Skybox vertex shader could not be read from file");
@@ -246,7 +266,7 @@ public class Renderer {
         // skybox fragment shader
         String skyboxFragmentSource = "";
         try {
-            skyboxFragmentSource = FileReader.readFile("/shaders/skybox.frag");
+            skyboxFragmentSource = FileReader.readFile("/shaders/skybox/skybox.frag");
         }
         catch (Exception e) {
             printError("Skybox fragment shader could not be read from file");
@@ -273,6 +293,54 @@ public class Renderer {
 
         skyboxVertexShader.delete();
         skyboxFragmentShader.delete();
+    }
+
+    private void debugShader() {
+        // debug vertex shader
+        String debugVertexSource = "";
+        try {
+            debugVertexSource = FileReader.readFile("/shaders/debug/debug.vert"); // TODO use lwjgl features instead
+        }
+        catch (Exception e) {
+            printError("Debug vertex shader could not be read from file");
+        }
+
+        Shader debugVertexShader = new Shader(debugVertexSource, GL_VERTEX_SHADER);
+
+        if (!debugVertexShader.checkShaderStatus()) {
+            printError("Debug vertex shader failed to compile");
+        }
+
+        // skybox fragment shader
+        String debugFragmentSource = "";
+        try {
+            debugFragmentSource = FileReader.readFile("/shaders/debug/debug.frag");
+        }
+        catch (Exception e) {
+            printError("Debug fragment shader could not be read from file");
+        }
+
+        Shader debugFragmentShader = new Shader(debugFragmentSource, GL_FRAGMENT_SHADER);
+
+        if (!debugFragmentShader.checkShaderStatus()) {
+            printError("Debug fragment shader failed to compile");
+        }
+
+        // skybox shader program
+        debugShaderProgram = new ShaderProgram();
+        debugShaderProgram.attachShader(debugVertexShader);
+        debugShaderProgram.attachShader(debugFragmentShader);
+        debugShaderProgram.linkProgram();
+
+        if (!debugShaderProgram.checkProgramLinkStatus()) {
+            printError("Debug shader program failed to link");
+        }
+
+        debugShaderProgram.detachShader(debugVertexShader);
+        debugShaderProgram.detachShader(debugFragmentShader);
+
+        debugVertexShader.delete();
+        debugFragmentShader.delete();
     }
 
     private void compileTextures() {
@@ -318,6 +386,8 @@ public class Renderer {
 
         window.create();
 
+        chunkDebugging = new ChunkDebugging();
+
         GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         height = vidMode.height(); //TODO update height universally
         width = vidMode.width();
@@ -333,6 +403,14 @@ public class Renderer {
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
+        VAOInit();
+
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        projectionMatrix = camera.getProjectionMatrix();
+    }
+
+    private void VAOInit() {
         // VAO and VBO setup
         int positionSize = 3;
         int uvSize = 2;
@@ -380,9 +458,33 @@ public class Renderer {
         skyboxVAO.unbind();
         skyboxVBO.unbind();
 
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        // debug
+        debugChunkLinesVAO = new VertexArrayObject();
+        debugChunkLinesVBO = new VertexBufferObject();
 
-        projectionMatrix = camera.getProjectionMatrix();
+        debugChunkLinesVAO.bind();
+        debugChunkLinesVBO.bind();
+        debugChunkLinesVBO.bindVertexData(chunkDebugging.primaryChunkLines);
+
+        createAttributePointer(0, positionSize, vertexSizeBytes, 0);
+        enableAttributePointer(0);
+
+        debugChunkLinesVAO.unbind();
+        debugChunkLinesVBO.unbind();
+
+        // secondary debug
+        debugSecondaryChunkLinesVAO = new VertexArrayObject();
+        debugSecondaryChunkLinesVBO = new VertexBufferObject();
+
+        debugSecondaryChunkLinesVAO.bind();
+        debugSecondaryChunkLinesVBO.bind();
+        debugSecondaryChunkLinesVBO.bindVertexData(chunkDebugging.secondaryChunkLines);
+
+        createAttributePointer(0, positionSize, vertexSizeBytes, 0);
+        enableAttributePointer(0);
+
+        debugSecondaryChunkLinesVAO.unbind();
+        debugSecondaryChunkLinesVBO.unbind();
     }
 
     public void init() {
@@ -399,8 +501,6 @@ public class Renderer {
 
         game.setPlayerPosition(camera.getPosition());
 
-//        swapBuffers();
-
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -408,14 +508,37 @@ public class Renderer {
         // matrix setup
         viewMatrix = camera.getViewMatrix();
 
+        // shader setup
         defaultShaderProgram.use();
-
         defaultShaderProgram.uploadUniform("view", viewMatrix);
         defaultShaderProgram.uploadUniform("projection", projectionMatrix);
+        defaultShaderProgram.uploadUniform("curvedWorld", true);
+        defaultShaderProgram.uploadUniform("worldCurve", 150f);
 
+        debugShaderProgram.use();
+        debugShaderProgram.uploadUniform("view", viewMatrix);
+        debugShaderProgram.uploadUniform("projection", projectionMatrix);
+        debugShaderProgram.uploadUniform("curvedWorld", false);
+        debugShaderProgram.uploadUniform("worldCurve", 150f);
+
+        processInput();
+    }
+
+    private void processInput() {
         if(glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(window.getWindow(), true);
         }
+
+        glfwSetKeyCallback(window.getWindow(), (window, key, scancode, action, mods) -> {
+           if (key == GLFW_KEY_F9 && action == GLFW_PRESS) {
+               if (chunkDebugLines != 2) {
+                   chunkDebugLines++;
+               }
+               else {
+                   chunkDebugLines = 0;
+               }
+           }
+        });
     }
 
     public void lastUpdate() {
@@ -456,14 +579,32 @@ public class Renderer {
         glDrawElements(GL_TRIANGLES, chunk.getNumberOfVertices() * 6, GL_UNSIGNED_INT, 0);
 
         chunk.getVAO().unbind();
+
+        if (chunkDebugLines == 1) {
+            debugShaderProgram.use();
+            debugShaderProgram.uploadUniform("model", modelMatrix);
+            debugShaderProgram.uploadUniform("color", new Vector4f(0, 1, 0, 1));
+
+            debugChunkLinesVAO.bind();
+            glDrawArrays(GL_LINES, 0, 2);
+        }
+        else if (chunkDebugLines == 2) {
+            debugShaderProgram.use();
+            debugShaderProgram.uploadUniform("model", modelMatrix);
+            debugShaderProgram.uploadUniform("color", new Vector4f(0, 1, 0, 1));
+
+            debugChunkLinesVAO.bind();
+            glDrawArrays(GL_LINES, 0, 2);
+
+            debugShaderProgram.uploadUniform("color", new Vector4f(1, 0, 0, 1));
+
+            debugSecondaryChunkLinesVAO.bind();
+            glDrawArrays(GL_LINES, 0, chunkDebugging.secondaryChunkLines.length);
+        }
     }
 
     public void swapBuffers() {
         glfwSwapBuffers(window.getWindow());
-    }
-
-    public Camera getCamera() {
-        return camera;
     }
 
     public void delete() {
@@ -478,5 +619,7 @@ public class Renderer {
         skybox.delete();
 
         defaultShaderProgram.delete();
+        skyboxShaderProgram.delete();
+        debugShaderProgram.delete();
     }
 }

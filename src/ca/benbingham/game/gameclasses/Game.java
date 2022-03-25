@@ -5,12 +5,10 @@ import ca.benbingham.game.blocks.BlockList;
 import ca.benbingham.game.planetstructure.Chunk;
 
 import ca.benbingham.game.planetstructure.Mesh;
-import ca.benbingham.game.planetstructure.planetgeneration.ChunkMeshGenerator;
 import ca.benbingham.game.planetstructure.planetgeneration.TerrainGenerator;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 
-import static ca.benbingham.engine.util.Printing.print;
 import static ca.benbingham.engine.util.math.Util.determineIfOnEdgeOfGrid;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
@@ -32,7 +30,7 @@ public class Game {
     private Chunk[][] loadedChunks;
     private int renderDistance = 12;
 
-    private ChunkMeshGenerator[][] chunkMeshGenerators;
+
 
     private float lastFrame;
     private float deltaTime;
@@ -128,12 +126,10 @@ public class Game {
         lastPlayerChunk = new Vector2i(0, 0);
 
         loadedChunks = new Chunk[renderDistance][renderDistance];
-        chunkMeshGenerators = new ChunkMeshGenerator[renderDistance][renderDistance];
 
         for (int i = 0; i < renderDistance; i++) {
             for (int j = 0; j < renderDistance; j++) {
                 loadedChunks[i][j] = new Chunk();
-                chunkMeshGenerators[i][j] = null;
             }
         }
 

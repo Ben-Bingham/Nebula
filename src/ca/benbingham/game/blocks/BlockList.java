@@ -45,6 +45,4 @@ public class BlockList {
         }
         return null;
     }
-//    public static Block AIR = new Block(EBlockName.AIR);
-//    public static Block STONE = new Block(EBlockName.STONE);
 }

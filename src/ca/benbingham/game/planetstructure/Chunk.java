@@ -36,7 +36,6 @@ public class Chunk {
         VBO.bind();
         VBO.setMaxDataSize(ySize * xSize * zSize * 36);
 
-
         EBO.bind();
         EBO.setMaxDataSize(ySize * xSize * zSize * 36);
 

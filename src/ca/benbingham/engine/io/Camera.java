@@ -66,7 +66,7 @@ public class Camera {
         position = spawnLocation;
 
         projectionMatrix = new Matrix4f()
-                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, 100f);
+                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, zFar);
     }
 
     private void receiveMousePositionInput() {

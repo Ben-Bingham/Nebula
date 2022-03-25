@@ -77,6 +77,15 @@ public class ShaderProgram {
         glUniform1i(glGetUniformLocation(shaderProgram, variableName), value);
     }
 
+    public void uploadUniform(String variableName, boolean value) {
+        if (value) {
+            glUniform1i(glGetUniformLocation(shaderProgram, variableName), 1);
+        }
+        else {
+            glUniform1i(glGetUniformLocation(shaderProgram, variableName), 0);
+        }
+    }
+
     public void uploadUniform(String variableName, Matrix4f value) {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
         value.get(buffer);
