@@ -9,6 +9,7 @@ import ca.benbingham.game.planetstructure.planetgeneration.TerrainGenerator;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 
+import static ca.benbingham.engine.util.Printing.print;
 import static ca.benbingham.engine.util.math.Util.determineIfOnEdgeOfGrid;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
@@ -118,6 +119,9 @@ public class Game {
     }
 
     private void init() {
+        masterBlockList = new BlockList();
+        masterBlockList.init();
+
         renderer = new Renderer(this);
 
         renderer.init();
@@ -132,9 +136,6 @@ public class Game {
                 loadedChunks[i][j] = new Chunk();
             }
         }
-
-        masterBlockList = new BlockList();
-        masterBlockList.init();
 
         generator = new TerrainGenerator(masterBlockList);
         recreateLoadedChunkArray();

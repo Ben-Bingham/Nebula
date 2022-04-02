@@ -7,6 +7,8 @@ import org.joml.Vector4f;
 
 import java.util.Arrays;
 
+import static ca.benbingham.engine.util.Printing.print;
+
 public class Quad {
     public Vertex[] vertices;
     private final int[] indices = {

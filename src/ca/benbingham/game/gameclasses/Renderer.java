@@ -346,21 +346,21 @@ public class Renderer {
     private void compileTextures() {
         // texture setup
         testTexture = new Texture();
-        testTexture.bindImageData("assets/images/stone.png", true);
+        testTexture.bindImageData("assets/images/textures/blocks/stone.png", true);
         testTexture.setWrapSettings(GL_REPEAT);
         testTexture.setShrinkMode(GL_NEAREST);
         testTexture.setStretchMode(GL_NEAREST);
 
         // atlas
         textureAtlas = new Texture();
-        textureAtlas.bindImageData("assets/images/textureAtlas.png", true);
+        textureAtlas.bindImageData("assets/images/Texture-Atlas.png", true);
         textureAtlas.generateMipmaps();
         textureAtlas.setWrapSettings(GL_REPEAT);
         textureAtlas.setShrinkMode(GL_NEAREST);
         textureAtlas.setStretchMode(GL_NEAREST);
 
         glActiveTexture(GL_TEXTURE0);
-        testTexture.bind();
+        textureAtlas.bind();
 
         // skybox
         String[] skyboxFilePaths = {
@@ -405,7 +405,7 @@ public class Renderer {
 
         VAOInit();
 
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         projectionMatrix = camera.getProjectionMatrix();
     }

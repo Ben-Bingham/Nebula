@@ -43,7 +43,7 @@ public class CubeMap{
                     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width.get(0), height.get(0), 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
                 }
                 else {
-                    printError("Unknown number of channels in image (Texture)");
+                    printError("Unknown number of channels in image (Cube map)");
                 }
 
                 stbi_image_free(image);

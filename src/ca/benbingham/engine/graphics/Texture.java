@@ -11,7 +11,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 import static org.lwjgl.stb.STBImage.*;
 
-public class Texture {
+public class Texture { //TODO make this class use an instance of the image class
     private String filePath;
     private final int texture;
 

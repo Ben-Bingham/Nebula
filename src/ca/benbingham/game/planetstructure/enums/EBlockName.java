@@ -2,5 +2,8 @@ package ca.benbingham.game.planetstructure.enums;
 
 public enum EBlockName {
     AIR,
-    STONE
+    STONE,
+    GRASS,
+    DIRT,
+    BEDROCK
 }
