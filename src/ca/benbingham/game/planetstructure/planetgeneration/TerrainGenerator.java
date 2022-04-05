@@ -158,11 +158,22 @@ public class TerrainGenerator {
             for (int j = 0; j < Chunk.ySize; j++) {
                 for (int k = 0; k < Chunk.zSize; k++) {
                     //val = (int) Math.ceil((chunkCords.x ^ 2) - (chunkCords.y ^ 2));
-                    if (j < val) {
+                    if (j == 60) {
                         blocks[i][j][k] = grassID;
-                    } else {
+                    }
+                    else if (j < 60 && j >= 57) {
+                        blocks[i][j][k] = dirtID;
+                    }
+                    else if (j < 57 && j >= 6) {
+                        blocks[i][j][k] = stoneID;
+                    }
+                    else if (j < 6) {
+                        blocks[i][j][k] = bedrockID;
+                    }
+                    else {
                         blocks[i][j][k] = airID;
                     }
+
                 }
             }
         }

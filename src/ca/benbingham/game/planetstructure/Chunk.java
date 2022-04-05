@@ -3,17 +3,23 @@ package ca.benbingham.game.planetstructure;
 import ca.benbingham.engine.graphics.renderingobjects.ElementBufferObject;
 import ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject;
 import ca.benbingham.engine.graphics.renderingobjects.VertexBufferObject;
+import ca.benbingham.game.planetstructure.planetgeneration.TerrainGenerator;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
+import static ca.benbingham.engine.util.Printing.print;
 
 public class Chunk {
     private Vector2i coordinates;
     private boolean blockUpdate; //TODO
     private boolean needsMesh = true;
+    private boolean hasMesh = false;
+
+    private Mesh mesh;
 
     public static final int xSize = 16;
     public static final int ySize = 256;
@@ -27,7 +33,14 @@ public class Chunk {
     private short[][][] blocks;
     private ArrayList<Block> extraBlockData; //TODO
 
-    public Chunk() {
+    public Chunk(Vector2i coordinates, TerrainGenerator generator) {
+        this.coordinates = coordinates;
+
+        extraBlockData = new ArrayList<>();
+        blocks = generator.createShortArrayForChunk(coordinates);
+    }
+
+    public void bindMeshData() {
         VAO = new VertexArrayObject();
         VBO = new VertexBufferObject();
         EBO = new ElementBufferObject();
@@ -48,8 +61,11 @@ public class Chunk {
         createAttributePointer(1, uvSize, vertexSizeBytes, positionSize);
         enableAttributePointer(1);
 
-        extraBlockData = new ArrayList<>();
-        blocks = new short[xSize][ySize][zSize];
+        this.setVBOData(0, mesh.getVertices());
+        this.setEBOData(0, mesh.getIndices());
+        this.setNumberOfVertices(mesh.getNumberOfVertices());
+
+        hasMesh = true;
     }
 
     public Vector2i getCoordinates() {
@@ -98,6 +114,14 @@ public class Chunk {
 
     public void setNeedsMesh(boolean needsMesh) {
         this.needsMesh = needsMesh;
+    }
+
+    public void setMesh(Mesh mesh) {
+        this.mesh = mesh;
+    }
+
+    public boolean hasMesh() {
+        return hasMesh;
     }
 
     public void delete() {

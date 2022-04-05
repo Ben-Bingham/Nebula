@@ -14,12 +14,21 @@ oldLoadedChunks = loadedChunks;
             if no:
                 do nothing
         for all chunks in newLoadedChunks:
-            if null:
+            if null //TODO and if there is no thread that is making that chunk:
                 instantiate a chunk instance
                 give the chunk chunkCords (from created array)
-                create a short array of blocks for the chunk
         for all chunks in newLoadedChunks:
             if it needs a new mesh:
+                //TODO create a new thread that creates the chunk data
+                                create a short array of blocks for the chunk
                 create a mesh for it
 
         loadedChunks = newLoadedChunks;
+
+
+
+
+
+
+        HAPPENS EVERY FRAME right before rendering
+        //todo if one of the chunk generation threads is finished copy the data over
