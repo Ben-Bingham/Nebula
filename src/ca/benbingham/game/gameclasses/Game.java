@@ -39,6 +39,9 @@ public class Game {
     private SingleChunkGenerator playerChunkGenerator;
     private Chunk playerChunk;
 
+    private SingleChunkGenerator[] secondaryChunkGenerators;
+    private Chunk[] secondaryChunks;
+
     private Timer timer = new Timer();
 
     private TerrainGenerator generator;
@@ -55,51 +58,55 @@ public class Game {
 
             renderer.firstUpdate();
 
-            playerChunkCords.x = (int) Math.ceil(playerPosition.x / Chunk.xSize);
-            playerChunkCords.y = (int) Math.ceil(playerPosition.z / Chunk.zSize);
+            playerChunkCords.x = (int) Math.floor(playerPosition.x / Chunk.xSize);
+            playerChunkCords.y = (int) Math.floor(playerPosition.z / Chunk.zSize);
 
             if (playerChunkCords.x != lastPlayerChunk.x || playerChunkCords.y != lastPlayerChunk.y || beforeFirstChunkCrossing) { // Player moves between chunks
-                //recreateLoadedChunkArray();
                 print("movedChunk");
                 playerChunkGenerator.setChunkCords(playerChunkCords);
+                playerChunkGenerator.unlock();
 
+                secondaryChunkGenerators[0].setChunkCords(new Vector2i(playerChunkCords.x + 1, playerChunkCords.y));
+                secondaryChunkGenerators[1].setChunkCords(new Vector2i(playerChunkCords.x - 1, playerChunkCords.y));
+                secondaryChunkGenerators[2].setChunkCords(new Vector2i(playerChunkCords.x, playerChunkCords.y + 1));
+                secondaryChunkGenerators[3].setChunkCords(new Vector2i(playerChunkCords.x, playerChunkCords.y - 1));
+                secondaryChunkGenerators[4].setChunkCords(new Vector2i(playerChunkCords.x + 1, playerChunkCords.y + 1));
+                secondaryChunkGenerators[5].setChunkCords(new Vector2i(playerChunkCords.x + 1, playerChunkCords.y - 1));
+                secondaryChunkGenerators[6].setChunkCords(new Vector2i(playerChunkCords.x- 1, playerChunkCords.y - 1));
+                secondaryChunkGenerators[7].setChunkCords(new Vector2i(playerChunkCords.x - 1, playerChunkCords.y + 1));
+                for (int i = 0; i < secondaryChunkGenerators.length; i++) {
+                    secondaryChunkGenerators[i].unlock();
+                }
                 beforeFirstChunkCrossing = false;
             }
 
             lastPlayerChunk.x = playerChunkCords.x;
             lastPlayerChunk.y = playerChunkCords.y;
 
-//            for (int i = 0; i < renderDistance; i++) {
-//                for (int j = 0; j < renderDistance; j++) {
-//                    if (primaryChunkGenerators[i][j] != null && primaryChunkGenerators[i][j].isDone()) {
-//                        loadedChunks[i][j].setVBOData(0, primaryChunkGenerators[i][j].getMesh().getVertices());
-//                        loadedChunks[i][j].setEBOData(0, primaryChunkGenerators[i][j].getMesh().getIndices());
-//                        loadedChunks[i][j].setNumberOfVertices(primaryChunkGenerators[i][j].getMesh().getNumberOfVertices());
-//
-//                        primaryChunkGenerators[i][j].kill();
-//                        primaryChunkGenerators[i][j] = null;
-//                    }
-//
-//                    renderer.renderChunk(loadedChunks[i][j]);
-//                }
-//            }
-
             // GAME LOOP
-            playerChunkGenerator.unlock();
-
             if (playerChunk != null && playerChunk.hasMesh()) {
                 renderer.renderChunk(playerChunk);
-                print("Player Chunk Rendered");
+            }
+
+            for (int i = 0; i < secondaryChunks.length; i++) {
+                if (secondaryChunks[i] != null && secondaryChunks[i].hasMesh()) {
+                    renderer.renderChunk(secondaryChunks[i]);
+                }
             }
 
             if (playerChunkGenerator.isDone()) {
                 playerChunk = playerChunkGenerator.getChunk();
                 playerChunk.bindMeshData();
-                playerChunkGenerator.lock();
-                print("Data copied");
+                playerChunkGenerator.setDone(false);
             }
 
-
+            for (int i = 0; i < secondaryChunkGenerators.length; i++) {
+                if (secondaryChunkGenerators[i].isDone()) {
+                    secondaryChunks[i] = secondaryChunkGenerators[i].getChunk();
+                    secondaryChunks[i].bindMeshData();
+                    secondaryChunkGenerators[i].setDone(false);
+                }
+            }
 
 
 
@@ -168,22 +175,16 @@ public class Game {
         playerChunkCords = new Vector2i(0, 0);
         lastPlayerChunk = new Vector2i(0, 0);
 
-        //loadedChunks = new Chunk[renderDistance][renderDistance];
-
-
-//        for (int i = 0; i < renderDistance; i++) {
-//            for (int j = 0; j < renderDistance; j++) {
-//                loadedChunks[i][j] = new Chunk();
-//            }
-//        }
-
-        //generator = new TerrainGenerator(masterBlockList);
-
-
-
         playerChunkGenerator = new SingleChunkGenerator(masterBlockList);
-
         playerChunkGenerator.start();
+
+        secondaryChunkGenerators = new SingleChunkGenerator[8];
+        secondaryChunks = new Chunk[8];
+
+        for (int i = 0; i < secondaryChunkGenerators.length; i++) {
+            secondaryChunkGenerators[i] = new SingleChunkGenerator(masterBlockList);
+            secondaryChunkGenerators[i].start();
+        }
 
         //recreateLoadedChunkArray();
     }
@@ -249,6 +250,11 @@ public class Game {
 
     public void delete() {
         renderer.delete();
+        playerChunkGenerator.delete();
+
+        for (int i = 0; i < secondaryChunkGenerators.length; i++) {
+            secondaryChunkGenerators[i].delete();
+        }
 //        for (int i = 0; i < renderDistance; i++) {
 //            for (int j = 0; j < renderDistance; j++) {
 //                loadedChunks[i][j].delete();

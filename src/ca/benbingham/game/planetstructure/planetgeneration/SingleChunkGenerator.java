@@ -10,10 +10,7 @@ import static ca.benbingham.engine.util.Printing.print;
 public class SingleChunkGenerator extends Thread {
     private Chunk chunk;
     private Vector2i chunkCords;
-    private Vector2i lastChunkCords;
     private final TerrainGenerator terrainGenerator;
-
-    private Mesh mesh;
 
     // true means: locked
     // false means: unlocked
@@ -26,44 +23,22 @@ public class SingleChunkGenerator extends Thread {
         this.terrainGenerator = new TerrainGenerator(masterBlockList);
     }
 
-    public SingleChunkGenerator(BlockList masterBlockList, TerrainGenerator generator) {
-        this.terrainGenerator = generator;
-    }
-
     @Override
     public void run() {
-        while (lock) {
-            Thread.onSpinWait();
+        while(!kill) {
+            while (lock) {
+                Thread.onSpinWait();
+            }
+
+            done = false;
+            makeChunk(chunkCords);
+            done = true;
+            this.lock();
         }
-
-        makeChunk(chunkCords);
-        done = true;
-
-        //while (!kill) {
-//            print("b");
-//            if (chunkCords != null && lastChunkCords != null) {
-//                if (chunkCords.x != lastChunkCords.x && chunkCords.y != lastChunkCords.y) {
-//                    done = false;
-//                    makeChunk(chunkCords);
-//
-//                    lastChunkCords.x = chunkCords.x;
-//                    lastChunkCords.y = chunkCords.y;
-//                    done = true;
-//
-//                }
-//            }
-//            else {
-//                try {
-//                    this.wait();
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-        //}
     }
 
     private void makeChunk(Vector2i chunkCords) {
-        this.chunk = new Chunk(chunkCords, terrainGenerator);
+        this.chunk = new Chunk(new Vector2i(chunkCords.x, chunkCords.y), terrainGenerator);
 
         int posX, negX, posY, negY;
         Chunk posXChunk, negXChunk, posYChunk, negYChunk;
@@ -79,15 +54,6 @@ public class SingleChunkGenerator extends Thread {
         negYChunk = new Chunk(new Vector2i(chunkCords.x, negY), terrainGenerator);
 
         chunk.setMesh(terrainGenerator.createChunkMesh(chunk, posXChunk, negXChunk, posYChunk, negYChunk));
-
-    }
-
-//    public void setChunk(Chunk chunk) {
-//        this.chunk = chunk;
-//    }
-
-    public Vector2i getChunkCords() {
-        return chunkCords;
     }
 
     public void setChunkCords(Vector2i chunkCords) {
@@ -100,6 +66,7 @@ public class SingleChunkGenerator extends Thread {
 
     public void delete() {
         this.kill = true;
+        this.unlock();
     }
 
     public Chunk getChunk() {

@@ -509,19 +509,50 @@ public class Renderer {
         viewMatrix = camera.getViewMatrix();
 
         // shader setup
-        defaultShaderProgram.use();
+        defaultShaderProgram.use(); //TODO these do not need to be uploaded so often
         defaultShaderProgram.uploadUniform("view", viewMatrix);
         defaultShaderProgram.uploadUniform("projection", projectionMatrix);
         defaultShaderProgram.uploadUniform("curvedWorld", true);
         defaultShaderProgram.uploadUniform("worldCurve", 150f);
 
-        debugShaderProgram.use();
+        debugShaderProgram.use();  //TODO these do not need to be uploaded so often
         debugShaderProgram.uploadUniform("view", viewMatrix);
         debugShaderProgram.uploadUniform("projection", projectionMatrix);
         debugShaderProgram.uploadUniform("curvedWorld", false);
         debugShaderProgram.uploadUniform("worldCurve", 150f);
 
         processInput();
+
+        // DEBUG LINES //TODO SCUFFED
+        if (chunkDebugLines != 0) {
+            for (int i = 0; i < game.getRenderDistance(); i++) {
+                for (int j = 0; j < game.getRenderDistance(); j++) {
+                    modelMatrix = new Matrix4f().translate(i * Chunk.xSize, 0, j * Chunk.zSize);
+
+                    if (chunkDebugLines == 1) {
+                        debugShaderProgram.use();
+                        debugShaderProgram.uploadUniform("model", modelMatrix);
+                        debugShaderProgram.uploadUniform("color", new Vector4f(0, 1, 0, 1));
+
+                        debugChunkLinesVAO.bind();
+                        glDrawArrays(GL_LINES, 0, 2);
+                    }
+                    else if (chunkDebugLines == 2) {
+                        debugShaderProgram.use();
+                        debugShaderProgram.uploadUniform("model", modelMatrix);
+                        debugShaderProgram.uploadUniform("color", new Vector4f(0, 1, 0, 1));
+
+                        debugChunkLinesVAO.bind();
+                        glDrawArrays(GL_LINES, 0, 2);
+
+                        debugShaderProgram.uploadUniform("color", new Vector4f(1, 0, 0, 1));
+
+                        debugSecondaryChunkLinesVAO.bind();
+                        glDrawArrays(GL_LINES, 0, chunkDebugging.secondaryChunkLines.length);
+                    }
+                }
+            }
+        }
     }
 
     private void processInput() {
@@ -579,28 +610,6 @@ public class Renderer {
         glDrawElements(GL_TRIANGLES, chunk.getNumberOfVertices() * 6, GL_UNSIGNED_INT, 0);
 
         chunk.getVAO().unbind();
-
-        if (chunkDebugLines == 1) {
-            debugShaderProgram.use();
-            debugShaderProgram.uploadUniform("model", modelMatrix);
-            debugShaderProgram.uploadUniform("color", new Vector4f(0, 1, 0, 1));
-
-            debugChunkLinesVAO.bind();
-            glDrawArrays(GL_LINES, 0, 2);
-        }
-        else if (chunkDebugLines == 2) {
-            debugShaderProgram.use();
-            debugShaderProgram.uploadUniform("model", modelMatrix);
-            debugShaderProgram.uploadUniform("color", new Vector4f(0, 1, 0, 1));
-
-            debugChunkLinesVAO.bind();
-            glDrawArrays(GL_LINES, 0, 2);
-
-            debugShaderProgram.uploadUniform("color", new Vector4f(1, 0, 0, 1));
-
-            debugSecondaryChunkLinesVAO.bind();
-            glDrawArrays(GL_LINES, 0, chunkDebugging.secondaryChunkLines.length);
-        }
     }
 
     public void swapBuffers() {
