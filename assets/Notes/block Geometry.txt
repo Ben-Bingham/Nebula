@@ -1,0 +1,83 @@
+private static final float[] positiveXFace = new float[]{
+            0.5f,  0.5f,  0.5f,   // top-left
+            0.5f,  0.5f, -0.5f,   // top-right
+            0.5f, -0.5f, -0.5f,   // bottom-right
+            0.5f, -0.5f,  0.5f,    // bottom-left
+    };
+
+    private static final float[] positiveXFaceTexCords = new float[]{
+            0.0f, 1.0f,  // top-left
+            1.0f, 1.0f,  // top-right
+            1.0f, 0.0f,  // bottom-right
+            0.0f, 0.0f,   // bottom-left
+    };
+
+    private static final float[] negativeXFace = new float[]{
+            -0.5f,  0.5f, -0.5f,   // top-left
+            -0.5f,  0.5f,  0.5f,   // top-right
+            -0.5f, -0.5f,  0.5f,   // bottom-right
+            -0.5f, -0.5f, -0.5f,   // bottom-left
+    };
+
+    private static final float[] negativeXFaceTexCords = new float[]{
+            1.0f, 1.0f,  // top-left
+            1.0f, 0.0f,  // top-right
+            0.0f, 0.0f,  // bottom-right
+            0.0f, 1.0f,  // bottom-left
+    };
+
+    private static final float[] positiveYFace = new float[]{
+            -0.5f,  0.5f, -0.5f,   // top-left
+            0.5f,  0.5f, -0.5f,  // top-right
+            0.5f,  0.5f,  0.5f,  // bottom-right
+            -0.5f,  0.5f,  0.5f,   // bottom-left
+    };
+
+    private static final float[] positiveYFaceTexCords = new float[]{
+            0.0f, 1.0f,  // top-left
+            1.0f, 1.0f, // top-right
+            1.0f, 0.0f, // bottom-right
+            0.0f, 0.0f,  // bottom-left
+    };
+
+    private static final float[] negativeYFace = new float[]{
+            0.5f, -0.5f, -0.5f,  // top-left
+            -0.5f, -0.5f, -0.5f,  // top-right
+            -0.5f, -0.5f,  0.5f,  // bottom-right
+            0.5f, -0.5f,  0.5f,  // bottom-left
+    };
+
+    private static final float[] negativeYFaceTexCords = new float[]{
+            0.0f, 1.0f,  // top-left
+            1.0f, 1.0f,  // top-right
+            1.0f, 0.0f,  // bottom-right
+            0.0f, 0.0f,  // bottom-left
+    };
+
+    private static final float[] positiveZFace = new float[]{
+            -0.5f,  0.5f,  0.5f,  // top-left
+            0.5f,  0.5f,  0.5f,  // top-right
+            0.5f, -0.5f,  0.5f,  // bottom-right
+            -0.5f, -0.5f,  0.5f,  // bottom-left
+    };
+
+    private static final float[] positiveZFaceTexCords = new float[]{
+            0.0f, 1.0f,   // top-left
+            1.0f, 1.0f,   // top-right
+            1.0f, 0.0f,   // bottom-right
+            0.0f, 0.0f,   // bottom-left
+    };
+
+    private static final float[] negativeZFace = new float[]{
+            0.5f, -0.5f, -0.5f,  // bottom-right
+            0.5f,  0.5f, -0.5f,  // top-right
+            -0.5f,  0.5f, -0.5f, // top-left
+            -0.5f, -0.5f, -0.5f,  // Bottom-left
+    };
+
+    private static final float[] negativeZFaceTexCords = new float[]{
+            1.0f, 0.0f,  // bottom-right
+            1.0f, 1.0f,  // top-right
+            0.0f, 1.0f,  // top-left
+            0.0f, 0.0f,  // bottom-left
+    };

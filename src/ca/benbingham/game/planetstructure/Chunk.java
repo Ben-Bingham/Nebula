@@ -3,20 +3,19 @@ package ca.benbingham.game.planetstructure;
 import ca.benbingham.engine.graphics.renderingobjects.ElementBufferObject;
 import ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject;
 import ca.benbingham.engine.graphics.renderingobjects.VertexBufferObject;
+import ca.benbingham.game.planetstructure.blocks.Block;
+import ca.benbingham.game.planetstructure.geometry.Mesh;
 import ca.benbingham.game.planetstructure.planetgeneration.TerrainGenerator;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
-import static ca.benbingham.engine.util.Printing.print;
 
 public class Chunk {
     private Vector2i coordinates;
     private boolean blockUpdate; //TODO
-    private boolean needsMesh = true;
     private boolean hasMesh = false;
 
     private Mesh mesh;
@@ -72,10 +71,6 @@ public class Chunk {
         return coordinates;
     }
 
-    public void setCoordinates(Vector2i coordinates) {
-        this.coordinates = coordinates;
-    }
-
     public VertexArrayObject getVAO() {
         return VAO;
     }
@@ -104,18 +99,6 @@ public class Chunk {
         return blocks;
     }
 
-    public void setBlocks(short[][][] blocks) {
-        this.blocks = blocks;
-    }
-
-    public boolean isNeedsMesh() {
-        return needsMesh;
-    }
-
-    public void setNeedsMesh(boolean needsMesh) {
-        this.needsMesh = needsMesh;
-    }
-
     public void setMesh(Mesh mesh) {
         this.mesh = mesh;
     }
@@ -125,9 +108,15 @@ public class Chunk {
     }
 
     public void delete() {
-        VAO.delete();
-        VBO.delete();
-        EBO.delete();
+        if (VAO != null) {
+            VAO.delete();
+        }
+        if (VBO != null) {
+            VBO.delete();
+        }
+        if (EBO != null) {
+            EBO.delete();
+        }
     }
 
     @Override

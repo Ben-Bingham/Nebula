@@ -1,18 +1,16 @@
 package ca.benbingham.game.planetstructure.planetgeneration;
 
 import ca.benbingham.engine.util.Timer;
-import ca.benbingham.game.Quad;
-import ca.benbingham.game.blocks.BlockList;
-import ca.benbingham.game.planetstructure.Block;
+import ca.benbingham.game.planetstructure.blocks.BlockList;
+import ca.benbingham.game.planetstructure.blocks.Block;
 import ca.benbingham.game.planetstructure.BlockFace;
 import ca.benbingham.game.planetstructure.Chunk;
-import ca.benbingham.game.planetstructure.Mesh;
+import ca.benbingham.game.planetstructure.geometry.Mesh;
 import ca.benbingham.game.planetstructure.enums.EBlockName;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static ca.benbingham.engine.util.ArrayUtil.floatListToArray;
 import static ca.benbingham.engine.util.ArrayUtil.intListToArray;

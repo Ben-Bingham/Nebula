@@ -1,20 +1,21 @@
 package ca.benbingham.game.planetstructure.planetgeneration;
 
-import ca.benbingham.game.blocks.BlockList;
+import ca.benbingham.game.planetstructure.blocks.BlockList;
 import ca.benbingham.game.planetstructure.Chunk;
-import ca.benbingham.game.planetstructure.Mesh;
 import org.joml.Vector2i;
 
 import static ca.benbingham.engine.util.Printing.print;
 
 public class SingleChunkGenerator extends Thread {
     private Chunk chunk;
+    private Chunk posXChunk, negXChunk, posYChunk, negYChunk;
+
     private Vector2i chunkCords;
     private final TerrainGenerator terrainGenerator;
 
+    private volatile boolean lock = true;
     // true means: locked
     // false means: unlocked
-    private volatile boolean lock = true;
 
     private boolean done = false;
     private volatile boolean kill = false;
@@ -41,7 +42,6 @@ public class SingleChunkGenerator extends Thread {
         this.chunk = new Chunk(new Vector2i(chunkCords.x, chunkCords.y), terrainGenerator);
 
         int posX, negX, posY, negY;
-        Chunk posXChunk, negXChunk, posYChunk, negYChunk;
 
         posX = chunkCords.x + 1;
         negX = chunkCords.x - 1;
@@ -78,6 +78,10 @@ public class SingleChunkGenerator extends Thread {
     }
 
     public void unlock() {
+        if (this.chunk != null) {
+            this.chunk.delete();
+            this.chunk = null;
+        }
         lock = false;
     }
 

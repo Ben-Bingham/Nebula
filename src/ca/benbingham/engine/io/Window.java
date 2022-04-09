@@ -22,14 +22,13 @@ public class Window {
         this.fullscreen = fullscreen;
     }
 
-    public boolean create() {
+    public void create() {
         // Setup Error Callback
         GLFWErrorCallback.createPrint(System.err).set();
 
         // Initialize GLFW
         if (!glfwInit()) {
             printError("GLFW failed to initialize");
-            return false;
         }
 
         // Configure GLFW
@@ -49,7 +48,6 @@ public class Window {
         if (window == NULL) {
             printError("GLFW Window failed to create");
             glfwTerminate();
-            return false;
         }
 
         glfwMakeContextCurrent(window);
@@ -57,7 +55,6 @@ public class Window {
         glfwSwapInterval(1);
         glfwShowWindow(window);
 
-        return true;
     }
 
     public void centerWindow() {
@@ -68,6 +65,10 @@ public class Window {
                 (vidMode.width() - width) / 2,
                 (vidMode.height() - height) / 2
         );
+    }
+
+    public void resizeWindow() {
+
     }
 
     public void destroy() {

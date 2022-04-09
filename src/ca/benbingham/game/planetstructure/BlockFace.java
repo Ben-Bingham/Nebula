@@ -1,7 +1,7 @@
 package ca.benbingham.game.planetstructure;
 
 import ca.benbingham.engine.images.Image;
-import ca.benbingham.game.Quad;
+import ca.benbingham.game.planetstructure.geometry.Quad;
 
 public class BlockFace {
     private Image image;
