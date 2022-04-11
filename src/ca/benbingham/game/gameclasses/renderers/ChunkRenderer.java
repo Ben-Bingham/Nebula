@@ -11,6 +11,7 @@ import ca.benbingham.game.planetstructure.Chunk;
 import org.joml.Matrix4f;
 
 import static ca.benbingham.engine.util.GLError.getOpenGLError;
+import static ca.benbingham.engine.util.Printing.print;
 import static ca.benbingham.engine.util.Printing.printError;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;

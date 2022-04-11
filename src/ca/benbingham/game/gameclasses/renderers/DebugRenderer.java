@@ -9,6 +9,7 @@ import ca.benbingham.game.gameclasses.renderers.interfaces.IRenderer;
 import ca.benbingham.game.planetstructure.Chunk;
 import ca.benbingham.game.planetstructure.ChunkDebugLineData;
 import org.joml.Matrix4f;
+import org.joml.Vector2i;
 import org.joml.Vector4f;
 
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
@@ -63,11 +64,27 @@ public class DebugRenderer implements IRenderer {
         glDepthFunc(GL_LESS);
         glDisable(GL_CULL_FACE);
 
-        //TODO Chunk debug lines are scuffed
         if (chunkDebugLines != 0) {
-            for (int i = 0; i < masterRenderer.getGame().getRenderDistance(); i++) {
-                for (int j = 0; j < masterRenderer.getGame().getRenderDistance(); j++) {
-                    modelMatrix = new Matrix4f().translate(Chunk.xSize * i, 0, Chunk.zSize * j);
+            Vector2i playerChunkCords = masterRenderer.getGame().getPlayerChunkCords();
+
+            int renderDistance = masterRenderer.getGame().getRenderDistance();
+
+            int xDifference = playerChunkCords.x - renderDistance;
+            int yDifference = playerChunkCords.y - renderDistance;
+
+            int chunksPerSide = (renderDistance * 2) + 1;
+
+            Vector2i[][] chunkCords = new Vector2i[chunksPerSide][chunksPerSide];
+
+            for (int i = 0; i < chunksPerSide; i++) {
+                for (int j = 0; j < chunksPerSide; j++) {
+                    chunkCords[i][j] = (new Vector2i(i + xDifference, j + yDifference));
+                }
+            }
+
+            for (int i = 0; i < chunksPerSide; i++) {
+                for (int j = 0; j < chunksPerSide; j++) {
+                    modelMatrix = new Matrix4f().translate(Chunk.xSize * chunkCords[i][j].x, 0, Chunk.zSize * chunkCords[i][j].y);
 
                     if (chunkDebugLines == 1) {
                         shaderProgram.use();
@@ -90,7 +107,6 @@ public class DebugRenderer implements IRenderer {
                         secondaryChunkLinesVAO.bind();
                         glDrawArrays(GL_LINES, 0, chunkDebugLineData.secondaryChunkLines.length);
                     }
-                    getOpenGLError(new Throwable());
                 }
             }
         }

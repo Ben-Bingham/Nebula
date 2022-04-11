@@ -8,6 +8,8 @@ import ca.benbingham.game.gameclasses.renderers.interfaces.IRenderer;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.system.Callback;
 
 import static ca.benbingham.engine.util.Printing.print;
 import static org.lwjgl.glfw.GLFW.*;
@@ -50,7 +52,7 @@ public class MasterRenderer implements IRenderer {
         glfwSetInputMode(window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         GL.createCapabilities();
-//      Callback debugProc = GLUtil.setupDebugMessageCallback(); //prints OpenGL debug info to the console
+        //Callback debugProc = GLUtil.setupDebugMessageCallback(); //prints OpenGL debug info to the console
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 

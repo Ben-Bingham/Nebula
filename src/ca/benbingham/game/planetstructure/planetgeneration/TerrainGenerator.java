@@ -23,7 +23,6 @@ public class TerrainGenerator {
     private final short bedrockID;
     private final short grassID;
     private final short airID;
-    private Timer timer = new Timer();
 
     public TerrainGenerator(BlockList masterBlockList) {
         this.blockList = masterBlockList;
@@ -150,31 +149,43 @@ public class TerrainGenerator {
 
     public short[][][] createShortArrayForChunk(Vector2i chunkCords) {
         short[][][] blocks = new short[Chunk.xSize][Chunk.ySize][Chunk.zSize];
+        byte[][][] blockIsThere = new byte[Chunk.xSize][Chunk.ySize][Chunk.zSize];
         int val = 60;
 
         for (int i = 0; i < Chunk.xSize; i++) {
             for (int j = 0; j < Chunk.ySize; j++) {
                 for (int k = 0; k < Chunk.zSize; k++) {
-                    //val = (int) Math.ceil((chunkCords.x ^ 2) - (chunkCords.y ^ 2));
+                    //val = (int) Math.ceil(chunkCords.x + chunkCords.y);
+                    if (j < val) {
+                        blockIsThere[i][j][k] = 1;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < Chunk.xSize; i++) {
+            for (int j = 0; j < Chunk.ySize; j++) {
+                for (int k = 0; k < Chunk.zSize; k++) {
                     if (chunkCords.x != 0) {
-                        if (j == 60) {
-                            blocks[i][j][k] = grassID;
-                        }
-                        else if (j < 60 && j >= 57) {
-                            blocks[i][j][k] = dirtID;
-                        }
-                        else if (j < 57 && j >= 6) {
-                            blocks[i][j][k] = stoneID;
-                        }
-                        else if (j < 6) {
-                            blocks[i][j][k] = bedrockID;
-                        }
-                        else {
-                            blocks[i][j][k] = airID;
+                        if (blockIsThere[i][j][k] == 1) {
+                            //val = (int) Math.ceil(chunkCords.x + chunkCords.y);
+                            if (j == val - 1) {
+                                blocks[i][j][k] = grassID;
+                            }
+                            else if (j < val && j >= val - 3) {
+                                blocks[i][j][k] = dirtID;
+                            }
+                            else if (j < val - 3 && j >= 6) {
+                                blocks[i][j][k] = stoneID;
+                            }
+                            else if (j < 6) {
+                                blocks[i][j][k] = bedrockID;
+                            }
+                            else {
+                                blocks[i][j][k] = airID;
+                            }
                         }
                     }
-
-
                 }
             }
         }
