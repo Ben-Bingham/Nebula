@@ -208,8 +208,8 @@ public class SkyboxRenderer implements IRenderer {
 
     @Override
     public void delete() {
-        skyboxVBO.delete();
         skyboxVAO.delete();
+        skyboxVBO.delete();
 
         skybox.delete();
 

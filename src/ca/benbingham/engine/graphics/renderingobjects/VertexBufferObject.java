@@ -30,9 +30,12 @@ public class VertexBufferObject {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    public void delete() { glDeleteBuffers(vertexBufferObject); }
-
     public int getVertexBufferObject() {
         return vertexBufferObject;
     }
+
+    public void delete() {
+        glDeleteBuffers(vertexBufferObject);
+    }
+
 }

@@ -2,46 +2,30 @@ package ca.benbingham.game.planetstructure.planetgeneration;
 
 import ca.benbingham.game.planetstructure.blocks.BlockList;
 import ca.benbingham.game.planetstructure.Chunk;
+import ca.benbingham.game.planetstructure.geometry.Mesh;
 import org.joml.Vector2i;
 
 import static ca.benbingham.engine.util.Printing.print;
 
-public class SingleChunkGenerator extends Thread {
-    private Chunk chunk;
-    private Chunk posXChunk, negXChunk, posYChunk, negYChunk;
+public class SingleChunkGenerator implements Runnable {
+    private Chunk chunk, posXChunk, negXChunk, posYChunk, negYChunk;
 
     private Vector2i chunkCords;
+    private ChunkGenerationManager manager;
     private final TerrainGenerator terrainGenerator;
 
-    private volatile boolean lock = true;
-
-    // true means: locked
-    // false means: unlocked
-    private boolean done = false;
-    private volatile boolean kill = false;
-
-    public SingleChunkGenerator(BlockList masterBlockList) {
+    public SingleChunkGenerator(BlockList masterBlockList, Vector2i chunkCords, ChunkGenerationManager manager) {
         this.terrainGenerator = new TerrainGenerator(masterBlockList);
+        this.chunkCords = chunkCords;
+        this.manager = manager;
     }
 
     @Override
     public void run() {
-        this.lock();
-
-        while(!kill) {
-            print("a");
-            done = false;
-            if (chunkCords != null) {
-                makeChunk(chunkCords);
-            }
-            done = true;
-            this.lock();
-        }
+        makeChunk(chunkCords);
     }
 
     private void makeChunk(Vector2i chunkCords) {
-        this.chunk = new Chunk(new Vector2i(chunkCords.x, chunkCords.y), terrainGenerator);
-
         int posX, negX, posY, negY;
 
         posX = chunkCords.x + 1;
@@ -49,52 +33,18 @@ public class SingleChunkGenerator extends Thread {
         posY = chunkCords.y + 1;
         negY = chunkCords.y - 1;
 
+        chunk = new Chunk(chunkCords, terrainGenerator);
         posXChunk = new Chunk(new Vector2i(posX, chunkCords.y), terrainGenerator);
         negXChunk = new Chunk(new Vector2i(negX, chunkCords.y), terrainGenerator);
         posYChunk = new Chunk(new Vector2i(chunkCords.x, posY), terrainGenerator);
         negYChunk = new Chunk(new Vector2i(chunkCords.x, negY), terrainGenerator);
 
-        chunk.setMesh(terrainGenerator.createChunkMesh(chunk, posXChunk, negXChunk, posYChunk, negYChunk));
-    }
+        Mesh mesh = terrainGenerator.createChunkMesh(chunk, posXChunk, negXChunk, posYChunk, negYChunk);
 
-    public void setChunkCords(Vector2i chunkCords) {
-        this.chunkCords = chunkCords;
-    }
-
-    public boolean isDone() {
-        return done;
+        manager.setChunkData(mesh, chunkCords, this);
     }
 
     public void delete() {
-        this.kill = true;
-        this.unlock();
-    }
 
-    public Chunk getChunk() {
-        return chunk;
-    }
-
-    public void setDone(boolean done) {
-        this.done = done;
-    }
-
-    public void unlock() {
-        if (this.chunk != null) {
-            this.chunk.delete();
-            this.chunk = null;
-        }
-        synchronized (this) {
-            notifyAll();
-        }
-    }
-
-    public void lock() {
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

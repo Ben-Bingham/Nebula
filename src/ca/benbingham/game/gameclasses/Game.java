@@ -11,6 +11,8 @@ import ca.benbingham.game.util.FPSCounter;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 
+import static ca.benbingham.engine.util.GLError.getOpenGLError;
+
 public class Game {
     private MasterRenderer masterRenderer;
     private boolean gameOpen = true;
@@ -19,7 +21,7 @@ public class Game {
 
     private Vector2i playerChunkCords;
     private Vector2i lastPlayerChunk;
-    private final int renderDistance = 5;
+    private final int renderDistance = 15;
 
     private BlockList masterBlockList;
 
@@ -51,6 +53,8 @@ public class Game {
             fpsCounter.update();
 
             masterRenderer.lastUpdate();
+
+            getOpenGLError(new Throwable());
         }
 
         delete();

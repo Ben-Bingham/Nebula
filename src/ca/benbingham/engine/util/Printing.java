@@ -1,5 +1,7 @@
 package ca.benbingham.engine.util;
 
+import org.joml.Vector2i;
+
 public class Printing {
     public static void print(String input) {
         System.out.println(input);
@@ -27,4 +29,9 @@ public class Printing {
     }
 
     public static void printError(String input) {System.err.println("ERROR: " + input);}
+
+    public static void print(Vector2i input) {
+        System.out.println("X: " + input.x + ", Y: " + input.y);
+    }
+
 }

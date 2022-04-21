@@ -29,6 +29,8 @@ public class ElementBufferObject {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    public void delete() { glDeleteBuffers(elementBufferObject); }
+    public void delete() {
+        glDeleteBuffers(elementBufferObject);
+    }
 
 }

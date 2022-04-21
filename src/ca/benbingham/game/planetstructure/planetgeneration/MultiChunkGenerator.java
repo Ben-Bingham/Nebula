@@ -9,13 +9,11 @@ import java.util.Arrays;
 import static ca.benbingham.engine.util.Printing.print;
 
 public class MultiChunkGenerator extends Thread{
-    private Chunk[] chunk;
+    private Chunk[] chunks;
     private Chunk posXChunk, negXChunk, posYChunk, negYChunk;
 
     private Vector2i[] chunkCords;
     private final TerrainGenerator terrainGenerator;
-
-    private volatile boolean lock = true;
 
     // true means: locked
     // false means: unlocked
@@ -27,7 +25,7 @@ public class MultiChunkGenerator extends Thread{
         Arrays.fill(done, false);
 
         chunkCords = new Vector2i[numberOfChunks];
-        chunk = new Chunk[numberOfChunks];
+        chunks = new Chunk[numberOfChunks];
 
         this.terrainGenerator = new TerrainGenerator(masterBlockList);
     }
@@ -49,7 +47,10 @@ public class MultiChunkGenerator extends Thread{
     }
 
     private void makeChunk(Vector2i chunkCords, int i) {
-        this.chunk[i] = new Chunk(new Vector2i(chunkCords.x, chunkCords.y), terrainGenerator);
+//        if (this.chunks[i] != null) {
+//            this.chunks[i].delete();
+//        }
+        this.chunks[i] = new Chunk(new Vector2i(chunkCords.x, chunkCords.y), terrainGenerator);
 
         int posX, negX, posY, negY;
 
@@ -62,9 +63,13 @@ public class MultiChunkGenerator extends Thread{
         negXChunk = new Chunk(new Vector2i(negX, chunkCords.y), terrainGenerator);
         posYChunk = new Chunk(new Vector2i(chunkCords.x, posY), terrainGenerator);
         negYChunk = new Chunk(new Vector2i(chunkCords.x, negY), terrainGenerator);
-        if (chunk[i] != null) {
-            chunk[i].setMesh(terrainGenerator.createChunkMesh(chunk[i], posXChunk, negXChunk, posYChunk, negYChunk));
+        if (chunks[i] != null) {
+            chunks[i].setMesh(terrainGenerator.createChunkMesh(chunks[i], posXChunk, negXChunk, posYChunk, negYChunk));
         }
+        posXChunk = null;
+        negXChunk = null;
+        posYChunk = null;
+        negYChunk = null;
     }
 
     public void setChunkCords(Vector2i[] chunkCords) {
@@ -75,13 +80,8 @@ public class MultiChunkGenerator extends Thread{
         return done[i];
     }
 
-    public void delete() {
-        this.kill = true;
-        this.unlock();
-    }
-
     public Chunk getChunk(int i) {
-        return chunk[i];
+        return chunks[i];
     }
 
     public void setDone(boolean done, int i) {
@@ -89,17 +89,7 @@ public class MultiChunkGenerator extends Thread{
     }
 
     public void unlock() {
-        if (this.chunk != null) {
-            for (int i = 0; i < chunk.length; i++) {
-                if (this.chunk[i] != null) {
-                    this.chunk[i].delete();
-                    this.chunk[i] = null;
-                }
-            }
-        }
-
         synchronized (this) {
-            print("notified");
             notifyAll();
         }
     }
@@ -112,5 +102,15 @@ public class MultiChunkGenerator extends Thread{
                 e.printStackTrace();
             }
         }
+    }
+
+    public void delete() {
+        this.kill = true;
+        for (Chunk chunk : chunks) {
+            if (chunk != null) {
+                chunk.delete();
+            }
+        }
+        this.unlock();
     }
 }
