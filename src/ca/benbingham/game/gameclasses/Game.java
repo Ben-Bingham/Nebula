@@ -21,7 +21,7 @@ public class Game {
 
     private Vector2i playerChunkCords;
     private Vector2i lastPlayerChunk;
-    private final int renderDistance = 15;
+    private final int renderDistance = 16;
 
     private BlockList masterBlockList;
 
@@ -41,7 +41,7 @@ public class Game {
             playerChunkCords.y = (int) Math.floor(playerPosition.z / Chunk.zSize);
 
             if (playerChunkCords.x != lastPlayerChunk.x || playerChunkCords.y != lastPlayerChunk.y || beforeFirstChunkCrossing) { // Player moves between chunks.
-                chunkGenerationManager.moveBetweenChunks(playerChunkCords);
+                chunkGenerationManager.moveBetweenChunks(playerChunkCords, beforeFirstChunkCrossing);
                 beforeFirstChunkCrossing = false;
             }
 

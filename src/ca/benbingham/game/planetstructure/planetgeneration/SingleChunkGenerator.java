@@ -5,7 +5,6 @@ import ca.benbingham.game.planetstructure.Chunk;
 import ca.benbingham.game.planetstructure.geometry.Mesh;
 import org.joml.Vector2i;
 
-import static ca.benbingham.engine.util.Printing.print;
 
 public class SingleChunkGenerator implements Runnable {
     private Chunk chunk, posXChunk, negXChunk, posYChunk, negYChunk;
@@ -41,7 +40,7 @@ public class SingleChunkGenerator implements Runnable {
 
         Mesh mesh = terrainGenerator.createChunkMesh(chunk, posXChunk, negXChunk, posYChunk, negYChunk);
 
-        manager.setChunkData(mesh, chunkCords, this);
+        manager.setChunkData(mesh, chunkCords);
     }
 
     public void delete() {

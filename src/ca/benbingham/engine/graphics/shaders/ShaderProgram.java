@@ -88,7 +88,6 @@ public class ShaderProgram {
     }
 
     public void uploadUniform(String variableName, Matrix4f value) {
-//        FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
         value.get(buffer);
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, variableName), false, buffer);
     }

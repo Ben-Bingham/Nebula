@@ -39,7 +39,7 @@ public class MasterRenderer implements IRenderer {
     private void renderInit() {
         window = new Window(windowHeight, windowWidth, "Nebula", true);
 
-        camera = new Camera(window, defaultFOV, mouseSensitivity, movementSpeed, new Vector3f(0, 62, 0), 500);
+        camera = new Camera(window, defaultFOV, mouseSensitivity, movementSpeed, new Vector3f(1, 62, 1), 1000);
 
         window.create();
 
