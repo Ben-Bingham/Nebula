@@ -14,7 +14,8 @@ import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderProgram {
     private int shaderProgram;
-    private List<ca.benbingham.engine.graphics.shaders.Shader> linkedShaders = new ArrayList<>();
+    private List<Shader> linkedShaders = new ArrayList<>();
+    private FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
 
     public ShaderProgram() {
         shaderProgram = glCreateProgram();
@@ -87,10 +88,12 @@ public class ShaderProgram {
     }
 
     public void uploadUniform(String variableName, Matrix4f value) {
-        FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
         value.get(buffer);
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, variableName), false, buffer);
     }
 
-    public void delete() { glDeleteProgram(shaderProgram); }
+    public void delete() {
+        glDeleteProgram(shaderProgram);
+        buffer.clear();
+    }
 }

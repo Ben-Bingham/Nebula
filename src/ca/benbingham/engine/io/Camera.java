@@ -31,6 +31,7 @@ public class Camera {
 
     private float yaw;
     private float pitch;
+    private float zFar;
 
     private float yawOffset;
     private float pitchOffset;
@@ -55,6 +56,7 @@ public class Camera {
         this.window = window;
         this.mouseSensitivity = mouseSensitivity;
         this.baseMovementSpeed = movementSpeed;
+        this.zFar = zFar;
 
         this.lastMouseX = window.getWidth() / 2f;
         this.lastMouseY = window.getHeight() / 2f;
@@ -136,8 +138,8 @@ public class Camera {
         baseMovementSpeed -= scrollOffsetY * -1;
         if (baseMovementSpeed < 0.01f)
             baseMovementSpeed = 0.01f;
-        if (baseMovementSpeed > 100)
-            baseMovementSpeed = 100;
+        if (baseMovementSpeed > 10000)
+            baseMovementSpeed = 10000;
     }
 
     private void processMovement() {
@@ -196,6 +198,11 @@ public class Camera {
         // Use cross product to calculate the right vector and up vector
         right = crossProduct(front, worldUp).normalize();
         up = crossProduct(right, front).normalize();
+    }
+
+    public void resizeWindow() {
+        projectionMatrix = new Matrix4f()
+                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, zFar);
     }
 
     public Matrix4f getViewMatrix() {

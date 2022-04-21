@@ -19,20 +19,20 @@ public class Image {
     private int width;
     private int channels;
 
-    public Image(String path, EImageModes mode) {
+    public Image(String path, EImageModes mode, Boolean flipImage) {
         this.path = absolutePath + path;
 
         if (mode == NEBULA_BYTE_BUFFER) {
-            byteBufferImage = loadImageAsByteBuffer();
+            byteBufferImage = loadImageAsByteBuffer(flipImage);
         }
 
         if (mode == NEBULA_BUFFERED_IMAGE) {
-            bufferedImage = loadImageAsBufferedImage();
+            bufferedImage = loadImageAsBufferedImage(flipImage);
         }
     }
 
-    private BufferedImage loadImageAsBufferedImage() {
-        ByteBuffer byteBufferImage = loadImageAsByteBuffer();
+    private BufferedImage loadImageAsBufferedImage(boolean flipImage) {
+        ByteBuffer byteBufferImage = loadImageAsByteBuffer(flipImage);
 
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D textureGraphics = bufferedImage.createGraphics();
@@ -60,8 +60,8 @@ public class Image {
         return bufferedImage;
     }
 
-    private ByteBuffer loadImageAsByteBuffer() {
-        stbi_set_flip_vertically_on_load(true);
+    private ByteBuffer loadImageAsByteBuffer(boolean flipImage) {
+        stbi_set_flip_vertically_on_load(flipImage);
 
         IntBuffer width = BufferUtils.createIntBuffer(1);
         IntBuffer height = BufferUtils.createIntBuffer(1);
@@ -98,6 +98,14 @@ public class Image {
 
     public int getWidth() {
         return width;
+    }
+
+    public int getChannels() {
+        return channels;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     @Override

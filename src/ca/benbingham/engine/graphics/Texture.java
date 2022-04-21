@@ -1,5 +1,6 @@
 package ca.benbingham.engine.graphics;
 
+import ca.benbingham.engine.images.Image;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
@@ -11,8 +12,8 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 import static org.lwjgl.stb.STBImage.*;
 
-public class Texture { //TODO make this class use an instance of the image class
-    private String filePath;
+public class Texture {
+    private Image image;
     private final int texture;
 
     public Texture() {
@@ -20,31 +21,26 @@ public class Texture { //TODO make this class use an instance of the image class
         glBindTexture(GL_TEXTURE_2D, texture);
     }
 
-    public void bindImageData(String filepath, boolean flipImage) {
-        stbi_set_flip_vertically_on_load(flipImage);
+    public void bindImageData(Image image) {
+        this.image = image;
 
-        this.filePath = filepath;
+        ByteBuffer byteBufferImage = image.getByteBufferImage();
 
-        IntBuffer width = BufferUtils.createIntBuffer(1);
-        IntBuffer height = BufferUtils.createIntBuffer(1);
-        IntBuffer channels = BufferUtils.createIntBuffer(1);
-        ByteBuffer image = stbi_load(filepath, width, height, channels, 0);
-
-        if (image != null) {
-            if (channels.get(0) == 3) {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width.get(0), height.get(0), 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+        if (byteBufferImage != null) {
+            if (image.getChannels() == 3) {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.getWidth(), image.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, byteBufferImage);
             }
-            else if(channels.get(0) == 4) {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width.get(0), height.get(0), 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+            else if(image.getChannels() == 4) {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, byteBufferImage);
             }
             else {
                 printError("Unknown number of channels in image (Texture)");
             }
 
-            stbi_image_free(image);
+            stbi_image_free(byteBufferImage);
         }
         else {
-            printError("Could not load image for texture " + filepath);
+            printError("Could not load image for texture " + image.getPath());
         }
     }
 

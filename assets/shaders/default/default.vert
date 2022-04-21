@@ -5,7 +5,7 @@ layout (location = 1) in vec2 uv;
 
 out vec2 textureCoordinates;
 
-uniform mat4 model; //TODO multply these on CPU
+uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 

@@ -1,18 +1,16 @@
 package ca.benbingham.game.planetstructure.planetgeneration;
 
 import ca.benbingham.engine.util.Timer;
-import ca.benbingham.game.Quad;
-import ca.benbingham.game.blocks.BlockList;
-import ca.benbingham.game.planetstructure.Block;
+import ca.benbingham.game.planetstructure.blocks.BlockList;
+import ca.benbingham.game.planetstructure.blocks.Block;
 import ca.benbingham.game.planetstructure.BlockFace;
 import ca.benbingham.game.planetstructure.Chunk;
-import ca.benbingham.game.planetstructure.Mesh;
+import ca.benbingham.game.planetstructure.geometry.Mesh;
 import ca.benbingham.game.planetstructure.enums.EBlockName;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static ca.benbingham.engine.util.ArrayUtil.floatListToArray;
 import static ca.benbingham.engine.util.ArrayUtil.intListToArray;
@@ -25,7 +23,6 @@ public class TerrainGenerator {
     private final short bedrockID;
     private final short grassID;
     private final short airID;
-    private Timer timer = new Timer();
 
     public TerrainGenerator(BlockList masterBlockList) {
         this.blockList = masterBlockList;
@@ -152,16 +149,42 @@ public class TerrainGenerator {
 
     public short[][][] createShortArrayForChunk(Vector2i chunkCords) {
         short[][][] blocks = new short[Chunk.xSize][Chunk.ySize][Chunk.zSize];
+        byte[][][] blockIsThere = new byte[Chunk.xSize][Chunk.ySize][Chunk.zSize];
         int val = 60;
 
         for (int i = 0; i < Chunk.xSize; i++) {
             for (int j = 0; j < Chunk.ySize; j++) {
                 for (int k = 0; k < Chunk.zSize; k++) {
-                    //val = (int) Math.ceil((chunkCords.x ^ 2) - (chunkCords.y ^ 2));
+                    //val = (int) Math.ceil(chunkCords.x + chunkCords.y);
                     if (j < val) {
-                        blocks[i][j][k] = grassID;
-                    } else {
-                        blocks[i][j][k] = airID;
+                        blockIsThere[i][j][k] = 1;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < Chunk.xSize; i++) {
+            for (int j = 0; j < Chunk.ySize; j++) {
+                for (int k = 0; k < Chunk.zSize; k++) {
+                    if (chunkCords.x != 0) {
+                        if (blockIsThere[i][j][k] == 1) {
+                            //val = (int) Math.ceil(chunkCords.x + chunkCords.y);
+                            if (j == val - 1) {
+                                blocks[i][j][k] = grassID;
+                            }
+                            else if (j < val && j >= val - 3) {
+                                blocks[i][j][k] = dirtID;
+                            }
+                            else if (j < val - 3 && j >= 6) {
+                                blocks[i][j][k] = stoneID;
+                            }
+                            else if (j < 6) {
+                                blocks[i][j][k] = bedrockID;
+                            }
+                            else {
+                                blocks[i][j][k] = airID;
+                            }
+                        }
                     }
                 }
             }

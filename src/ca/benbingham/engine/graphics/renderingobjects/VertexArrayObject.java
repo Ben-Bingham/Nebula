@@ -1,9 +1,7 @@
 package ca.benbingham.engine.graphics.renderingobjects;
 
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30.*;
 
 public class VertexArrayObject {
     private final int vertexArrayObject;
@@ -36,6 +34,8 @@ public class VertexArrayObject {
         glDisableVertexAttribArray(index);
     }
 
-    public void delete() { glDeleteBuffers(vertexArrayObject); }
+    public void delete() {
+        glDeleteVertexArrays(vertexArrayObject);
+    }
 
 }

@@ -13,8 +13,7 @@ import java.util.Arrays;
 
 import static ca.benbingham.engine.util.Printing.print;
 
-public class TextureAtlas { //TODO make it so it works with non square photos
-    //TODO having different x lenghts and y lengths of textures is partially implemented
+public class TextureAtlas {
     private final Image[] images;
     private final int pixelsPerSideOfAtlasX;
     private final int pixelsPerSideOfAtlasY;
@@ -26,7 +25,7 @@ public class TextureAtlas { //TODO make it so it works with non square photos
 
         texturesPerSideOfAtlas = (short) Math.ceil(Math.sqrt(images.length));
 
-        pixelsPerSideOfAtlasX = (short) (texturesPerSideOfAtlas * images[0].getWidth()); // TODO assumes all textures have same height and width
+        pixelsPerSideOfAtlasX = (short) (texturesPerSideOfAtlas * images[0].getWidth());
         pixelsPerSideOfAtlasY = (short) (texturesPerSideOfAtlas * images[0].getHeight());
 
         BufferedImage textureAtlas = new BufferedImage(pixelsPerSideOfAtlasX, pixelsPerSideOfAtlasY, BufferedImage.TYPE_INT_ARGB);

@@ -3,17 +3,26 @@ package ca.benbingham.game.planetstructure;
 import ca.benbingham.engine.graphics.renderingobjects.ElementBufferObject;
 import ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject;
 import ca.benbingham.engine.graphics.renderingobjects.VertexBufferObject;
+import ca.benbingham.game.planetstructure.blocks.Block;
+import ca.benbingham.game.planetstructure.geometry.Mesh;
+import ca.benbingham.game.planetstructure.planetgeneration.TerrainGenerator;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
 
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
 import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
+import static ca.benbingham.engine.util.Printing.print;
 
 public class Chunk {
     private Vector2i coordinates;
     private boolean blockUpdate; //TODO
-    private boolean needsMesh = true;
+    private boolean hasMesh = false;
+    private boolean hasMeshToBeBound = false;
+    private boolean needsVAOInit = true;
+    private boolean needsMesh = false;
+
+    private Mesh mesh;
 
     public static final int xSize = 16;
     public static final int ySize = 256;
@@ -27,7 +36,20 @@ public class Chunk {
     private short[][][] blocks;
     private ArrayList<Block> extraBlockData; //TODO
 
+    private int distanceFromPlayerChunk = -1;
+
+    public Chunk(Vector2i coordinates, TerrainGenerator generator) {
+        this.coordinates = coordinates;
+
+        extraBlockData = new ArrayList<>();
+        blocks = generator.createShortArrayForChunk(coordinates);
+    }
+
     public Chunk() {
+
+    }
+
+    public void bindMeshData() {
         VAO = new VertexArrayObject();
         VBO = new VertexBufferObject();
         EBO = new ElementBufferObject();
@@ -48,16 +70,27 @@ public class Chunk {
         createAttributePointer(1, uvSize, vertexSizeBytes, positionSize);
         enableAttributePointer(1);
 
-        extraBlockData = new ArrayList<>();
-        blocks = new short[xSize][ySize][zSize];
+        this.setVBOData(0, mesh.getVertices());
+        this.setEBOData(0, mesh.getIndices());
+        this.setNumberOfVertices(mesh.getNumberOfVertices());
+
+        hasMesh = true;
+        hasMeshToBeBound = false;
+        needsVAOInit = false;
+    }
+
+    public void bindNewMeshData() {
+        VAO.bind();
+        this.setVBOData(0, mesh.getVertices()); //TODO might need to clear out all data first
+        this.setEBOData(0, mesh.getIndices());
+        this.setNumberOfVertices(mesh.getNumberOfVertices());
+
+        hasMesh = true;
+        hasMeshToBeBound = false;
     }
 
     public Vector2i getCoordinates() {
         return coordinates;
-    }
-
-    public void setCoordinates(Vector2i coordinates) {
-        this.coordinates = coordinates;
     }
 
     public VertexArrayObject getVAO() {
@@ -88,8 +121,32 @@ public class Chunk {
         return blocks;
     }
 
-    public void setBlocks(short[][][] blocks) {
-        this.blocks = blocks;
+    public void setMesh(Mesh mesh) {
+        this.mesh = mesh;
+    }
+
+    public boolean needsVAOInit() {
+        return needsVAOInit;
+    }
+
+    public void setCoordinates(Vector2i coordinates) {
+        this.coordinates = coordinates;
+    }
+
+    public boolean hasMesh() {
+        return hasMesh;
+    }
+
+    public boolean hasMeshToBeBound() {
+        return hasMeshToBeBound;
+    }
+
+    public void setHasMeshToBeBound(boolean hasMeshToBeBound) {
+        this.hasMeshToBeBound = hasMeshToBeBound;
+    }
+
+    public void setHasMesh(boolean hasMesh) {
+        this.hasMesh = hasMesh;
     }
 
     public boolean isNeedsMesh() {
@@ -100,10 +157,31 @@ public class Chunk {
         this.needsMesh = needsMesh;
     }
 
+    public Mesh getMesh() {
+        return mesh;
+    }
+
+    public int getDistanceFromPlayerChunk() {
+        return distanceFromPlayerChunk;
+    }
+
+    public void setDistanceFromPlayerChunk(Vector2i playerChunkCords) {
+        int xDiff = playerChunkCords.x - coordinates.x;
+        int yDiff = playerChunkCords.y - coordinates.y;
+
+        this.distanceFromPlayerChunk = (int) Math.abs(Math.floor(Math.sqrt((xDiff * xDiff) + (yDiff * yDiff))));
+    }
+
     public void delete() {
-        VAO.delete();
-        VBO.delete();
-        EBO.delete();
+        if (VAO != null) {
+            VAO.delete();
+        }
+        if (VBO != null) {
+            VBO.delete();
+        }
+        if (EBO != null) {
+            EBO.delete();
+        }
     }
 
     @Override
