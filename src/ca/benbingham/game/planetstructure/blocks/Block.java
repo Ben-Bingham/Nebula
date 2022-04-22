@@ -7,6 +7,11 @@ import ca.benbingham.game.planetstructure.enums.EBlockFaces;
 import ca.benbingham.game.planetstructure.enums.EBlockName;
 import ca.benbingham.game.planetstructure.geometry.BlockFaceGeometry;
 
+import java.util.Arrays;
+
+import static ca.benbingham.engine.util.Printing.print;
+import static ca.benbingham.game.planetstructure.enums.EBlockFaces.NEBULA_LEFT_FACE;
+
 /**
  * This class handles exclusively the geometric and texture data related to all blocks
  */
@@ -131,7 +136,19 @@ public class Block {
         for (int i = 0; i < numberOfFaces; i++) {
             for (int j = 0; j < atlas.getImages().length; j++) {
                 if (faces[i].getImage() == atlas.getImages()[j]) {
-                    faces[i].setTexCords(atlas.getTexCords()[j]);
+                    if (i == NEBULA_LEFT_FACE.getValue()) {
+                        faces[i].setTexCords(0, atlas.getTexCords()[j][6]);
+                        faces[i].setTexCords(1, atlas.getTexCords()[j][7]);
+                        faces[i].setTexCords(2, atlas.getTexCords()[j][0]);
+                        faces[i].setTexCords(3, atlas.getTexCords()[j][1]);
+                        faces[i].setTexCords(4, atlas.getTexCords()[j][2]);
+                        faces[i].setTexCords(5, atlas.getTexCords()[j][3]);
+                        faces[i].setTexCords(6, atlas.getTexCords()[j][4]);
+                        faces[i].setTexCords(7, atlas.getTexCords()[j][5]);
+                    }
+                    else {
+                        faces[i].setTexCords(atlas.getTexCords()[j]);
+                    }
                 }
             }
         }

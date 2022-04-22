@@ -40,6 +40,7 @@ public class TextureAtlas {
 
             texture = rotateImage(texture, -90); // TODO this might modify the original image as well (the one stored in the image class)
 
+
             if (i < texturesPerSideOfAtlas) {
                 xOffset = i * images[i].getWidth();
                 yOffset = 0;

@@ -18,7 +18,11 @@ public class BlockList {
     public static Block STONE;
     public static Block GRASS;
     public static Block DIRT;
-    public static Block BEDROCK;
+    public static Block PLANET_CORE;
+    public static Block RED;
+    public static Block BLUE;
+    public static Block GREEN;
+    public static Block YELLOW;
 
     private final ArrayList<Block> blockList;
 
@@ -34,17 +38,37 @@ public class BlockList {
         blockList.add(STONE = new Block(EBlockName.STONE, getNextID(), new Image("textures/blocks/stone.png", NEBULA_BUFFERED_IMAGE, true)));
         blockList.add(GRASS = new Block(EBlockName.GRASS, getNextID(), new Image("textures/blocks/grass_side.png", NEBULA_BUFFERED_IMAGE, true), new Image("textures/blocks/grass_top.png", NEBULA_BUFFERED_IMAGE, true), NEBULA_TOP_FACE, new Image("textures/blocks/dirt.png", NEBULA_BUFFERED_IMAGE, true), NEBULA_BOTTOM_FACE));
         blockList.add(DIRT = new Block(EBlockName.DIRT, getNextID(), new Image("textures/blocks/dirt.png", NEBULA_BUFFERED_IMAGE, true)));
-        blockList.add(BEDROCK = new Block(EBlockName.BEDROCK, getNextID(), new Image("textures/blocks/bedrock.png", NEBULA_BUFFERED_IMAGE, true)));
+        blockList.add(PLANET_CORE = new Block(EBlockName.PLANET_CORE, getNextID(), new Image("textures/blocks/planet_core.png", NEBULA_BUFFERED_IMAGE, true)));
+        blockList.add(RED = new Block(EBlockName.RED, getNextID(), new Image("textures/blocks/TestBlocks/RedTestTexture.png", NEBULA_BUFFERED_IMAGE, true)));
+        blockList.add(BLUE = new Block(EBlockName.BLUE, getNextID(), new Image("textures/blocks/TestBlocks/BlueTestTexture.png", NEBULA_BUFFERED_IMAGE, true)));
+        blockList.add(GREEN = new Block(EBlockName.GREEN, getNextID(), new Image("textures/blocks/TestBlocks/GreenTestTexture.png", NEBULA_BUFFERED_IMAGE, true)));
+        blockList.add(YELLOW = new Block(EBlockName.YELLOW, getNextID(), new Image("textures/blocks/TestBlocks/YellowTestTexture.png", NEBULA_BUFFERED_IMAGE, true)));
 
+        initializeTextureAtlas();
+    }
+
+    private void initializeTextureAtlas() {
         ArrayList<Image> textures = new ArrayList<>();
 
         for (Block block : blockList) {
-            textures.add(block.getFaces()[0].getImage());
-            textures.add(block.getFaces()[1].getImage());
-            textures.add(block.getFaces()[2].getImage());
-            textures.add(block.getFaces()[3].getImage());
-            textures.add(block.getFaces()[4].getImage());
-            textures.add(block.getFaces()[5].getImage());
+            if (!textures.contains(block.getFaces()[0].getImage())) {
+                textures.add(block.getFaces()[0].getImage());
+            }
+            if (!textures.contains(block.getFaces()[1].getImage())) {
+                textures.add(block.getFaces()[1].getImage());
+            }
+            if (!textures.contains(block.getFaces()[2].getImage())) {
+                textures.add(block.getFaces()[2].getImage());
+            }
+            if (!textures.contains(block.getFaces()[3].getImage())) {
+                textures.add(block.getFaces()[3].getImage());
+            }
+            if (!textures.contains(block.getFaces()[4].getImage())) {
+                textures.add(block.getFaces()[4].getImage());
+            }
+            if (!textures.contains(block.getFaces()[5].getImage())) {
+                textures.add(block.getFaces()[5].getImage());
+            }
         }
 
         Image[] texture = new Image[textures.size()];

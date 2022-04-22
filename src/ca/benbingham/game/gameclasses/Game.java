@@ -21,7 +21,7 @@ public class Game {
 
     private Vector2i playerChunkCords;
     private Vector2i lastPlayerChunk;
-    private final int renderDistance = 16;
+    private final int renderDistance = 15;
 
     private BlockList masterBlockList;
 

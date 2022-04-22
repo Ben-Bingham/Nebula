@@ -5,5 +5,9 @@ public enum EBlockName {
     STONE,
     GRASS,
     DIRT,
-    BEDROCK
+    PLANET_CORE,
+    RED,
+    BLUE,
+    YELLOW,
+    GREEN
 }

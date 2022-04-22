@@ -1,12 +1,12 @@
 package ca.benbingham.game.planetstructure.planetgeneration;
 
-import ca.benbingham.engine.util.Timer;
 import ca.benbingham.game.planetstructure.blocks.BlockList;
 import ca.benbingham.game.planetstructure.blocks.Block;
 import ca.benbingham.game.planetstructure.BlockFace;
 import ca.benbingham.game.planetstructure.Chunk;
 import ca.benbingham.game.planetstructure.geometry.Mesh;
 import ca.benbingham.game.planetstructure.enums.EBlockName;
+import ca.benbingham.game.planetstructure.planetgeneration.noise.PerlinNoiseGenerator;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 
@@ -20,9 +20,13 @@ public class TerrainGenerator {
     private final BlockList blockList;
     private final short stoneID;
     private final short dirtID;
-    private final short bedrockID;
+    private final short planetCoreID;
     private final short grassID;
     private final short airID;
+    private final short redID;
+    private final short blueID;
+    private final short greenID;
+    private final short yellowID;
 
     public TerrainGenerator(BlockList masterBlockList) {
         this.blockList = masterBlockList;
@@ -30,8 +34,12 @@ public class TerrainGenerator {
         stoneID = blockList.getBlockIDWithName(EBlockName.STONE);
         airID = blockList.getBlockIDWithName(EBlockName.AIR);
         dirtID = blockList.getBlockIDWithName(EBlockName.DIRT);
-        bedrockID = blockList.getBlockIDWithName(EBlockName.BEDROCK);
+        planetCoreID = blockList.getBlockIDWithName(EBlockName.PLANET_CORE);
         grassID = blockList.getBlockIDWithName(EBlockName.GRASS);
+        redID = blockList.getBlockIDWithName(EBlockName.RED);
+        blueID = blockList.getBlockIDWithName(EBlockName.BLUE);
+        greenID = blockList.getBlockIDWithName(EBlockName.GREEN);
+        yellowID = blockList.getBlockIDWithName(EBlockName.YELLOW);
     }
 
     public Mesh createChunkMesh(Chunk chunk, Chunk posXChunk, Chunk negXChunk, Chunk posYChunk, Chunk negYChunk) {
@@ -43,8 +51,6 @@ public class TerrainGenerator {
         ArrayList<Integer> totalIndices = new ArrayList<>();
         ArrayList<Float> totalVertices = new ArrayList<>();
         float[] tempFaceVertices;
-
-        int temp = 0;
 
         for (int i = 0; i < Chunk.xSize; i++) {
             for (int j = 0; j < Chunk.ySize; j++) {
@@ -135,7 +141,6 @@ public class TerrainGenerator {
                             }
                         }
                     }
-
                 }
             }
         }
@@ -150,46 +155,78 @@ public class TerrainGenerator {
     public short[][][] createShortArrayForChunk(Vector2i chunkCords) {
         short[][][] blocks = new short[Chunk.xSize][Chunk.ySize][Chunk.zSize];
         byte[][][] blockIsThere = new byte[Chunk.xSize][Chunk.ySize][Chunk.zSize];
-        int val = 60;
+        double val = 60;
+        double seed = 0.12312342348291 / 100L;
+        double xAndYWeight = 0.01;
+        double overAllWeight = 40;
+        double chunkWeight = Chunk.xSize;
+        double blockWeight = 1;
 
         for (int i = 0; i < Chunk.xSize; i++) {
             for (int j = 0; j < Chunk.ySize; j++) {
                 for (int k = 0; k < Chunk.zSize; k++) {
-                    //val = (int) Math.ceil(chunkCords.x + chunkCords.y);
-                    if (j < val) {
+                    val = PerlinNoiseGenerator.noise((((chunkCords.x * chunkWeight) + (i * blockWeight)) / 1 + seed) * xAndYWeight, 0.1, (((chunkCords.y * chunkWeight) + (k * blockWeight)) / 1 + seed) * xAndYWeight);
+                    val *= overAllWeight;
+                    val += 60;
+
+                    if (j <= val) {
                         blockIsThere[i][j][k] = 1;
                     }
-                }
-            }
-        }
-
-        for (int i = 0; i < Chunk.xSize; i++) {
-            for (int j = 0; j < Chunk.ySize; j++) {
-                for (int k = 0; k < Chunk.zSize; k++) {
-                    if (chunkCords.x != 0) {
+                    if (chunkCords.x != 0 && chunkCords.y != 0) {
+//                         Standard blocks
                         if (blockIsThere[i][j][k] == 1) {
-                            //val = (int) Math.ceil(chunkCords.x + chunkCords.y);
-                            if (j == val - 1) {
+                            if (j > val - 1) {
                                 blocks[i][j][k] = grassID;
                             }
                             else if (j < val && j >= val - 3) {
                                 blocks[i][j][k] = dirtID;
-                            }
-                            else if (j < val - 3 && j >= 6) {
+                            } else if (j < val - 3 && j >= 1) {
                                 blocks[i][j][k] = stoneID;
-                            }
-                            else if (j < 6) {
-                                blocks[i][j][k] = bedrockID;
+                            } else if (j < 1) {
+                                blocks[i][j][k] = planetCoreID;
                             }
                             else {
                                 blocks[i][j][k] = airID;
                             }
                         }
+
+                        // Generation Testing
+//                        if (blockIsThere[i][j][k] == 1) {
+//                            if (j > ((val / 4) * 3)) {
+//                                blocks[i][j][k] = redID;
+//                            } else if (j > ((val / 2))) {
+//                                blocks[i][j][k] = blueID;
+//                            } else if (j > ((val / 4))) {
+//                                blocks[i][j][k] = greenID;
+//                            } else {
+//                                blocks[i][j][k] = yellowID;
+//                            }
+//                        }
+                        // Generation testing 2
+//                        if (blockIsThere[i][j][k] == 1) {
+//                            for (int l = 0; l < Chunk.ySize; l += 10) {
+//                                if (j == 1 + l|| j == 2 + l) {
+//                                    blocks[i][j][k] = redID;
+//                                    break;
+//                                } else if (j == 3 + l || j == 4 + l) {
+//                                    blocks[i][j][k] = blueID;
+//                                    break;
+//                                } else if (j == 5 + l || j == 6 + l) {
+//                                    blocks[i][j][k] = greenID;
+//                                    break;
+//                                } else if (j == 7 + l || j == 8 + l){
+//                                    blocks[i][j][k] = yellowID;
+//                                    break;
+//                                } else if (j == 9 + l || j == 0 + l) {
+//                                    blocks[i][j][k] = bedrockID;
+//                                    break;
+//                                }
+//                            }
+//                        }
                     }
                 }
             }
         }
-
         return blocks;
     }
 }

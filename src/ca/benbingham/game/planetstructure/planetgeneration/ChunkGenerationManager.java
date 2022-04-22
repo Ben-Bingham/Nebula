@@ -4,7 +4,7 @@ import ca.benbingham.game.gameclasses.renderers.ChunkRenderer;
 import ca.benbingham.game.planetstructure.Chunk;
 import ca.benbingham.game.planetstructure.blocks.BlockList;
 import ca.benbingham.game.planetstructure.geometry.Mesh;
-import ca.benbingham.game.planetstructure.planetgeneration.enums.EMovementDirection;
+
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class ChunkGenerationManager {
         disallowedChunks = new ArrayList<>();
         acceptableChunkCords = new ArrayList<>();
         chunksNeeded = new ArrayList<>();
-        executorService = Executors.newFixedThreadPool(1);
+        executorService = Executors.newFixedThreadPool(4);
 
         lastTime = (float) glfwGetTime();
     }
@@ -104,7 +104,7 @@ public class ChunkGenerationManager {
             disallowedChunks.clear();
 
             // Adds to the queue all needed chunks after staying still for a bit
-            if (timeSinceLastChunkCrossing > 500000 || timeSinceLastChunkCrossing > 1 && !chunksMade) {
+            if (timeSinceLastChunkCrossing > 500000 || timeSinceLastChunkCrossing > 0.5 && !chunksMade) {
                 if (activeChunks.size() > 0) {
                     for (int i = 0; i < acceptableChunkCords.size(); i++) {
                         boolean hasChunk = false;
@@ -156,7 +156,6 @@ public class ChunkGenerationManager {
         float deltaTime = (float) glfwGetTime() - lastTime;
         lastTime = (float) glfwGetTime();
         timeSinceLastChunkCrossing += deltaTime;
-        print(timeSinceLastChunkCrossing);
     }
 
     private void addAllChunksToQueue() {

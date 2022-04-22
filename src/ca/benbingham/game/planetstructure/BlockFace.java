@@ -10,7 +10,7 @@ public class BlockFace {
 
     public BlockFace() {
         quad = new Quad();
-        texCords = new float[4];
+        texCords = new float[8];
     }
 
     public Image getImage() {
@@ -31,6 +31,10 @@ public class BlockFace {
 
     public void setTexCords(float[] texCords) {
         this.texCords = texCords;
+    }
+
+    public void setTexCords(int i, float value) {
+        texCords[i] = value;
     }
 
     public void setQuad(Quad quad) {
