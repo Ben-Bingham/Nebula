@@ -55,5 +55,13 @@ public class ChunkDebugLineData {
         }
 
         secondaryChunkLines = floatListToArray(totalFloatList);
+
+        for (int i = 0; i < primaryChunkLines.length; i++) {
+            primaryChunkLines[i] -= 0.5f;
+        }
+
+        for (int i = 0; i < secondaryChunkLines.length; i++) {
+            secondaryChunkLines[i] -= 0.5;
+        }
     }
 }

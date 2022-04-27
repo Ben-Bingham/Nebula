@@ -13,8 +13,8 @@ public class SingleChunkGenerator implements Runnable {
     private ChunkGenerationManager manager;
     private final TerrainGenerator terrainGenerator;
 
-    public SingleChunkGenerator(BlockList masterBlockList, Vector2i chunkCords, ChunkGenerationManager manager) {
-        this.terrainGenerator = new TerrainGenerator(masterBlockList);
+    public SingleChunkGenerator(TerrainGenerator terrainGenerator, Vector2i chunkCords, ChunkGenerationManager manager) {
+        this.terrainGenerator = terrainGenerator;
         this.chunkCords = chunkCords;
         this.manager = manager;
     }
@@ -24,23 +24,23 @@ public class SingleChunkGenerator implements Runnable {
         makeChunk(chunkCords);
     }
 
-    private void makeChunk(Vector2i chunkCords) {
+    private void makeChunk(Vector2i representingCoordinates) {
         int posX, negX, posY, negY;
 
-        posX = chunkCords.x + 1;
-        negX = chunkCords.x - 1;
-        posY = chunkCords.y + 1;
-        negY = chunkCords.y - 1;
+        posX = representingCoordinates.x + 1; //TODO
+        negX = representingCoordinates.x - 1;
+        posY = representingCoordinates.y + 1;
+        negY = representingCoordinates.y - 1;
 
-        chunk = new Chunk(chunkCords, terrainGenerator);
-        posXChunk = new Chunk(new Vector2i(posX, chunkCords.y), terrainGenerator);
-        negXChunk = new Chunk(new Vector2i(negX, chunkCords.y), terrainGenerator);
-        posYChunk = new Chunk(new Vector2i(chunkCords.x, posY), terrainGenerator);
-        negYChunk = new Chunk(new Vector2i(chunkCords.x, negY), terrainGenerator);
+        chunk = new Chunk(representingCoordinates, terrainGenerator);
+        posXChunk = new Chunk(new Vector2i(posX, representingCoordinates.y), terrainGenerator);
+        negXChunk = new Chunk(new Vector2i(negX, representingCoordinates.y), terrainGenerator);
+        posYChunk = new Chunk(new Vector2i(representingCoordinates.x, posY), terrainGenerator);
+        negYChunk = new Chunk(new Vector2i(representingCoordinates.x, negY), terrainGenerator);
 
         Mesh mesh = terrainGenerator.createChunkMesh(chunk, posXChunk, negXChunk, posYChunk, negYChunk);
 
-        manager.setChunkData(mesh, chunkCords);
+        manager.setChunkData(mesh, representingCoordinates);
     }
 
     public void delete() {

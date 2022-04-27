@@ -29,4 +29,14 @@ public class Util {
             return false;
         }
     }
+
+    public static double map(double value, double inputStart, double inputEnd, double outputStart, double outputEnd) {
+        double slope;
+        double output;
+
+        slope = (outputEnd - outputStart) / (inputEnd - inputStart);
+        output = outputStart + slope * (value - inputStart);
+
+        return output;
+    }
 }

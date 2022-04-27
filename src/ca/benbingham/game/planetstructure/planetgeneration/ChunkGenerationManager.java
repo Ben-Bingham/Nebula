@@ -3,17 +3,17 @@ package ca.benbingham.game.planetstructure.planetgeneration;
 import ca.benbingham.game.gameclasses.renderers.ChunkRenderer;
 import ca.benbingham.game.planetstructure.Chunk;
 import ca.benbingham.game.planetstructure.blocks.BlockList;
+import ca.benbingham.game.planetstructure.bodys.Planet;
 import ca.benbingham.game.planetstructure.geometry.Mesh;
 
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static ca.benbingham.engine.util.Printing.print;
-import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 public class ChunkGenerationManager {
     private final int renderDistance;
@@ -27,31 +27,31 @@ public class ChunkGenerationManager {
     ArrayList<Vector2i> acceptableChunkCords;
     ArrayList<Vector2i> chunksNeeded;
 
-    private float timeSinceLastChunkCrossing = 0;
-    private float lastTime = 0;
-
-    private boolean chunksMade;
+    private Planet activeBody;
+    private TerrainGenerator terrainGenerator;
 
     private final ExecutorService executorService;
 
-    public ChunkGenerationManager(int renderDistance, ChunkRenderer chunkRenderer, BlockList masterBlockList) {
+    public ChunkGenerationManager(int renderDistance, ChunkRenderer chunkRenderer, BlockList masterBlockList, Planet activeBody) {
         this.renderDistance = renderDistance;
 
         chunksPerSide = (renderDistance * 2) + 1;
 
         this.chunkRenderer = chunkRenderer;
         this.masterBlockList = masterBlockList;
+        this.activeBody = activeBody;
+
+        terrainGenerator = new TerrainGenerator(masterBlockList, activeBody);
 
         activeChunks = new ArrayList<>();
         disallowedChunks = new ArrayList<>();
         acceptableChunkCords = new ArrayList<>();
         chunksNeeded = new ArrayList<>();
         executorService = Executors.newFixedThreadPool(4);
-
-        lastTime = (float) glfwGetTime();
     }
 
     public void moveBetweenChunks(Vector2i playerChunkCords, boolean worldJustLoaded) {
+        List<Vector2i> oldAcceptableChunkCords = new ArrayList<>(acceptableChunkCords);
         acceptableChunkCords.clear();
         disallowedChunks.clear();
 
@@ -70,8 +70,13 @@ public class ChunkGenerationManager {
             }
         }
 
-        timeSinceLastChunkCrossing = 0;
-        chunksMade = false;
+        if (!worldJustLoaded) {
+            for (int i = 0; i < acceptableChunkCords.size(); i++) {
+                if (!oldAcceptableChunkCords.contains(acceptableChunkCords.get(i))) {
+                    executorService.execute(new SingleChunkGenerator(terrainGenerator, acceptableChunkCords.get(i), this));
+                }
+            }
+        }
     }
 
     public void update() {
@@ -102,39 +107,6 @@ public class ChunkGenerationManager {
                 }
             }
             disallowedChunks.clear();
-
-            // Adds to the queue all needed chunks after staying still for a bit
-            if (timeSinceLastChunkCrossing > 500000 || timeSinceLastChunkCrossing > 0.5 && !chunksMade) {
-                if (activeChunks.size() > 0) {
-                    for (int i = 0; i < acceptableChunkCords.size(); i++) {
-                        boolean hasChunk = false;
-                        for (int j = 0; j < activeChunks.size(); j++) {
-                            if (activeChunks.get(j) != null && acceptableChunkCords.get(i) != null) {
-                                if (activeChunks.get(j).getCoordinates().x == acceptableChunkCords.get(i).x && activeChunks.get(j).getCoordinates().y == acceptableChunkCords.get(i).y) {
-                                    hasChunk = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!hasChunk) {
-                            chunksNeeded.add(acceptableChunkCords.get(i));
-                        }
-                    }
-                    for (int i = 0; i < chunksNeeded.size(); i++) {
-                        executorService.execute(new SingleChunkGenerator(masterBlockList, chunksNeeded.get(i), this));
-                    }
-                    chunksNeeded.clear();
-                }
-                else {
-                    addAllChunksToQueue();
-                }
-
-                chunksMade = true;
-            }
-
-            if (timeSinceLastChunkCrossing > 500000) {
-                timeSinceLastChunkCrossing = 0;
-            }
         }
 
         synchronized (this) {
@@ -152,16 +124,12 @@ public class ChunkGenerationManager {
                 }
             }
         }
-
-        float deltaTime = (float) glfwGetTime() - lastTime;
-        lastTime = (float) glfwGetTime();
-        timeSinceLastChunkCrossing += deltaTime;
     }
 
     private void addAllChunksToQueue() {
         synchronized (this) {
             for (int i = 0; i < acceptableChunkCords.size(); i++) {
-                executorService.execute(new SingleChunkGenerator(masterBlockList, acceptableChunkCords.get(i), this));
+                executorService.execute(new SingleChunkGenerator(terrainGenerator, acceptableChunkCords.get(i), this));
             }
         }
     }
@@ -177,6 +145,12 @@ public class ChunkGenerationManager {
                 activeChunks.add(chunk);
             }
         }
+    }
+
+    private void changePlanet(Planet body) { //TODO needs to be tested
+        terrainGenerator = new TerrainGenerator(masterBlockList, body);
+        activeChunks.clear();
+        addAllChunksToQueue();
     }
 
     public void delete() {

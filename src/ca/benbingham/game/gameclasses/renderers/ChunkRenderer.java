@@ -41,8 +41,8 @@ public class ChunkRenderer implements IRenderer {
         shaderProgram.use();
         shaderProgram.uploadUniform("view", masterRenderer.getCamera().getViewMatrix());
         shaderProgram.uploadUniform("projection", masterRenderer.getCamera().getProjectionMatrix());
-        shaderProgram.uploadUniform("curvedWorld", false);
-        shaderProgram.uploadUniform("worldCurve", 150f);
+        shaderProgram.uploadUniform("curvedWorld", false); //TODO world curving needs to be more precise.
+        shaderProgram.uploadUniform("worldCurve", 1500f);
     }
 
     @Override

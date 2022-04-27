@@ -4,9 +4,11 @@ import ca.benbingham.game.planetstructure.blocks.BlockList;
 import ca.benbingham.game.planetstructure.blocks.Block;
 import ca.benbingham.game.planetstructure.BlockFace;
 import ca.benbingham.game.planetstructure.Chunk;
+import ca.benbingham.game.planetstructure.bodys.Planet;
+import ca.benbingham.game.planetstructure.enums.EPlanetTypes;
 import ca.benbingham.game.planetstructure.geometry.Mesh;
 import ca.benbingham.game.planetstructure.enums.EBlockName;
-import ca.benbingham.game.planetstructure.planetgeneration.noise.PerlinNoiseGenerator;
+import ca.benbingham.game.planetstructure.planetgeneration.noise.TerrainNoiseGenerator;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 
@@ -14,10 +16,12 @@ import java.util.ArrayList;
 
 import static ca.benbingham.engine.util.ArrayUtil.floatListToArray;
 import static ca.benbingham.engine.util.ArrayUtil.intListToArray;
-import static ca.benbingham.engine.util.Printing.print;
 
 public class TerrainGenerator {
     private final BlockList blockList;
+    private final TerrainNoiseGenerator terrainNoiseGenerator;
+    private final Planet planet;
+
     private final short stoneID;
     private final short dirtID;
     private final short planetCoreID;
@@ -28,8 +32,10 @@ public class TerrainGenerator {
     private final short greenID;
     private final short yellowID;
 
-    public TerrainGenerator(BlockList masterBlockList) {
+    public TerrainGenerator(BlockList masterBlockList, Planet planet) {
         this.blockList = masterBlockList;
+        this.planet = planet;
+        terrainNoiseGenerator = new TerrainNoiseGenerator(this.planet);
 
         stoneID = blockList.getBlockIDWithName(EBlockName.STONE);
         airID = blockList.getBlockIDWithName(EBlockName.AIR);
@@ -134,6 +140,9 @@ public class TerrainGenerator {
                                     tempFaceVertices = currentFace.getQuad().vertices[m].getAsFloatArray();
                                     for (int n = 0; n < 5; n++) {
                                         totalVertices.add(tempFaceVertices[n]);
+//                                        totalVertices.add(0f);
+//                                        totalVertices.add(0f);
+//                                        totalVertices.add(0f);
                                     }
                                 }
 
@@ -154,58 +163,35 @@ public class TerrainGenerator {
 
     public short[][][] createShortArrayForChunk(Vector2i chunkCords) {
         short[][][] blocks = new short[Chunk.xSize][Chunk.ySize][Chunk.zSize];
-        byte[][][] blockIsThere = new byte[Chunk.xSize][Chunk.ySize][Chunk.zSize];
-        double val = 60;
-        double seed = 0.12312342348291 / 100L;
-        double xAndYWeight = 0.01;
-        double overAllWeight = 40;
-        double chunkWeight = Chunk.xSize;
-        double blockWeight = 1;
+        double[][] noiseValues = terrainNoiseGenerator.generateNoiseForChunk(chunkCords);
 
         for (int i = 0; i < Chunk.xSize; i++) {
             for (int j = 0; j < Chunk.ySize; j++) {
                 for (int k = 0; k < Chunk.zSize; k++) {
-                    val = PerlinNoiseGenerator.noise((((chunkCords.x * chunkWeight) + (i * blockWeight)) / 1 + seed) * xAndYWeight, 0.1, (((chunkCords.y * chunkWeight) + (k * blockWeight)) / 1 + seed) * xAndYWeight);
-                    val *= overAllWeight;
-                    val += 60;
 
-                    if (j <= val) {
-                        blockIsThere[i][j][k] = 1;
-                    }
-                    if (chunkCords.x != 0 && chunkCords.y != 0) {
-//                         Standard blocks
-                        if (blockIsThere[i][j][k] == 1) {
-                            if (j > val - 1) {
-                                blocks[i][j][k] = grassID;
-                            }
-                            else if (j < val && j >= val - 3) {
-                                blocks[i][j][k] = dirtID;
-                            } else if (j < val - 3 && j >= 1) {
-                                blocks[i][j][k] = stoneID;
-                            } else if (j < 1) {
-                                blocks[i][j][k] = planetCoreID;
-                            }
-                            else {
-                                blocks[i][j][k] = airID;
-                            }
+                    if (planet.getType() == EPlanetTypes.NEBULA_DEFAULT_PLANET) {
+                        if (j == noiseValues[i][k]) {
+                            blocks[i][j][k] = grassID;
                         }
+                        else if (j < noiseValues[i][k] && j >= noiseValues[i][k] - 3) {
+                            blocks[i][j][k] = dirtID;
+                        }
+                        else if (j < noiseValues[i][k] - 3 && j >= 1) {
+                            blocks[i][j][k] = stoneID;
+                        }
+                        else if (j < 1) {
+                            blocks[i][j][k] = planetCoreID;
+                        }
+                        else {
+                            blocks[i][j][k] = airID;
+                        }
+                    }
 
-                        // Generation Testing
-//                        if (blockIsThere[i][j][k] == 1) {
-//                            if (j > ((val / 4) * 3)) {
-//                                blocks[i][j][k] = redID;
-//                            } else if (j > ((val / 2))) {
-//                                blocks[i][j][k] = blueID;
-//                            } else if (j > ((val / 4))) {
-//                                blocks[i][j][k] = greenID;
-//                            } else {
-//                                blocks[i][j][k] = yellowID;
-//                            }
-//                        }
                         // Generation testing 2
-//                        if (blockIsThere[i][j][k] == 1) {
+//                    if (noiseValues[i][k] != 0) {
+//                        if (j <= noiseValues[i][k]) {
 //                            for (int l = 0; l < Chunk.ySize; l += 10) {
-//                                if (j == 1 + l|| j == 2 + l) {
+//                                if (j == 1 + l || j == 2 + l) {
 //                                    blocks[i][j][k] = redID;
 //                                    break;
 //                                } else if (j == 3 + l || j == 4 + l) {
@@ -218,12 +204,14 @@ public class TerrainGenerator {
 //                                    blocks[i][j][k] = yellowID;
 //                                    break;
 //                                } else if (j == 9 + l || j == 0 + l) {
-//                                    blocks[i][j][k] = bedrockID;
+//                                    blocks[i][j][k] = planetCoreID;
 //                                    break;
 //                                }
 //                            }
 //                        }
-                    }
+//                    }
+
+
                 }
             }
         }

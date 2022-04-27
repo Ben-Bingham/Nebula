@@ -4,8 +4,9 @@ import ca.benbingham.game.planetstructure.blocks.BlockList;
 import ca.benbingham.game.gameclasses.renderers.MasterRenderer;
 import ca.benbingham.game.planetstructure.Chunk;
 
+import ca.benbingham.game.planetstructure.bodys.Planet;
+import ca.benbingham.game.planetstructure.enums.EPlanetTypes;
 import ca.benbingham.game.planetstructure.planetgeneration.ChunkGenerationManager;
-import ca.benbingham.game.planetstructure.planetgeneration.SingleChunkGenerator;
 
 import ca.benbingham.game.util.FPSCounter;
 import org.joml.Vector2i;
@@ -22,8 +23,9 @@ public class Game {
     private Vector2i playerChunkCords;
     private Vector2i lastPlayerChunk;
     private final int renderDistance = 15;
-
     private BlockList masterBlockList;
+
+    private Planet activePlanet;
 
     private ChunkGenerationManager chunkGenerationManager;
 
@@ -71,7 +73,9 @@ public class Game {
         playerChunkCords = new Vector2i(0, 0);
         lastPlayerChunk = new Vector2i(0, 0);
 
-        chunkGenerationManager = new ChunkGenerationManager(renderDistance, masterRenderer.chunkRenderer, masterBlockList);
+        activePlanet = new Planet(EPlanetTypes.NEBULA_DEFAULT_PLANET, 2398479234874f, 400000);
+
+        chunkGenerationManager = new ChunkGenerationManager(renderDistance, masterRenderer.chunkRenderer, masterBlockList, activePlanet);
     }
 
     public void resizeWindow() {
@@ -92,6 +96,10 @@ public class Game {
 
     public Vector2i getPlayerChunkCords() {
         return playerChunkCords;
+    }
+
+    public Planet getActivePlanet() {
+        return activePlanet;
     }
 
     public void delete() {
