@@ -138,11 +138,8 @@ public class TerrainGenerator {
 
                                 for (int m = 0; m < currentFace.getQuad().vertices.length; m++) {
                                     tempFaceVertices = currentFace.getQuad().vertices[m].getAsFloatArray();
-                                    for (int n = 0; n < 5; n++) {
+                                    for (int n = 0; n < 8; n++) {
                                         totalVertices.add(tempFaceVertices[n]);
-//                                        totalVertices.add(0f);
-//                                        totalVertices.add(0f);
-//                                        totalVertices.add(0f);
                                     }
                                 }
 

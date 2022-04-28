@@ -9,6 +9,7 @@ import ca.benbingham.engine.util.FileReader;
 import ca.benbingham.game.gameclasses.renderers.interfaces.IRenderer;
 import ca.benbingham.game.planetstructure.Chunk;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import static ca.benbingham.engine.util.GLError.getOpenGLError;
 import static ca.benbingham.engine.util.Printing.print;
@@ -43,6 +44,9 @@ public class ChunkRenderer implements IRenderer {
         shaderProgram.uploadUniform("projection", masterRenderer.getCamera().getProjectionMatrix());
         shaderProgram.uploadUniform("curvedWorld", false); //TODO world curving needs to be more precise.
         shaderProgram.uploadUniform("worldCurve", 1500f);
+        shaderProgram.uploadUniform("lightPos", new Vector3f(0, 5, 0));
+        shaderProgram.uploadUniform("lightColor", new Vector3f(1, 1, 1));
+
     }
 
     @Override

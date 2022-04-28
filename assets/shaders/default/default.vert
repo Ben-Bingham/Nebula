@@ -6,12 +6,22 @@ layout (location = 2) in vec3 normals;
 
 out vec2 textureCoordinates;
 
+// for fragment shader
+out vec3 FragPos;
+out vec3 Normal;
+out vec3 LightPos;
+out vec3 LightColor;
+
+uniform vec3 lightPos;
+uniform vec3 lightColor;
+
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
 uniform int curvedWorld;
 uniform float worldCurve;
+
 
 float WorldCurvature(vec2 pos){
     return dot(pos, pos) / worldCurve;
@@ -32,4 +42,7 @@ void main() {
     }
 
     textureCoordinates = uv;
+    Normal = normals;
+    FragPos = vec3(model * vec4(position, 1.0));
+    LightPos = lightPos;
 }

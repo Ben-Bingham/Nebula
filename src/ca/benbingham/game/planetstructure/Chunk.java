@@ -63,16 +63,16 @@ public class Chunk {
 
         int positionSize = 3;
         int uvSize = 2;
-//        int normalSize = 3;
-//        int vertexSizeBytes = (positionSize + uvSize + normalSize);
-        int vertexSizeBytes = (positionSize + uvSize);
+        int normalSize = 3;
+        int vertexSizeBytes = (positionSize + uvSize + normalSize);
+//        int vertexSizeBytes = (positionSize + uvSize);
 
         createAttributePointer(0, positionSize, vertexSizeBytes, 0);
         enableAttributePointer(0);
         createAttributePointer(1, uvSize, vertexSizeBytes, positionSize);
         enableAttributePointer(1);
-//        createAttributePointer(2, normalSize, vertexSizeBytes, positionSize + uvSize);
-//        enableAttributePointer(2);
+        createAttributePointer(2, normalSize, vertexSizeBytes, positionSize + uvSize);
+        enableAttributePointer(2);
 
         this.setVBOData(0, mesh.getVertices());
         this.setEBOData(0, mesh.getIndices());

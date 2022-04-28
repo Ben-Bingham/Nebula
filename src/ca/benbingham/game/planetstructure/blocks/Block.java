@@ -1,13 +1,12 @@
 package ca.benbingham.game.planetstructure.blocks;
 
+import ca.benbingham.engine.graphics.renderingdata.BlockRenderingData;
 import ca.benbingham.engine.images.Image;
 import ca.benbingham.engine.images.TextureAtlas;
 import ca.benbingham.game.planetstructure.BlockFace;
 import ca.benbingham.game.planetstructure.enums.EBlockFaces;
 import ca.benbingham.game.planetstructure.enums.EBlockName;
 import ca.benbingham.game.planetstructure.geometry.BlockFaceGeometry;
-
-import java.util.Arrays;
 
 import static ca.benbingham.engine.util.Printing.print;
 import static ca.benbingham.game.planetstructure.enums.EBlockFaces.NEBULA_LEFT_FACE;
@@ -19,6 +18,7 @@ import static ca.benbingham.game.planetstructure.enums.EBlockFaces.NEBULA_LEFT_F
 public class Block {
     private final short ID;
     private final EBlockName name;
+//    private final BlockRenderingData renderingData;
 
     private final int numberOfFaces = 6;
 
@@ -155,12 +155,12 @@ public class Block {
     }
 
     public void importGeometricData() {
-        faces[0].getQuad().importData(BlockFaceGeometry.positiveXFace, faces[0].getTexCords());
-        faces[1].getQuad().importData(BlockFaceGeometry.negativeXFace, faces[1].getTexCords());
-        faces[2].getQuad().importData(BlockFaceGeometry.positiveYFace, faces[2].getTexCords());
-        faces[3].getQuad().importData(BlockFaceGeometry.negativeYFace, faces[3].getTexCords());
-        faces[4].getQuad().importData(BlockFaceGeometry.positiveZFace, faces[4].getTexCords());
-        faces[5].getQuad().importData(BlockFaceGeometry.negativeZFace, faces[5].getTexCords());
+        faces[0].getQuad().importData(BlockFaceGeometry.positiveXFacePositions, faces[0].getTexCords(),BlockFaceGeometry.positiveXFaceNormals);
+        faces[1].getQuad().importData(BlockFaceGeometry.negativeXFacePositions, faces[1].getTexCords(),BlockFaceGeometry.negativeXFaceNormals);
+        faces[2].getQuad().importData(BlockFaceGeometry.positiveYFacePositions, faces[2].getTexCords(),BlockFaceGeometry.positiveYFaceNormals);
+        faces[3].getQuad().importData(BlockFaceGeometry.negativeYFacePositions, faces[3].getTexCords(),BlockFaceGeometry.negativeYFaceNormals);
+        faces[4].getQuad().importData(BlockFaceGeometry.positiveZFacePositions, faces[4].getTexCords(),BlockFaceGeometry.positiveZFaceNormals);
+        faces[5].getQuad().importData(BlockFaceGeometry.negativeZFacePositions, faces[5].getTexCords(),BlockFaceGeometry.negativeZFaceNormals);
 
         for (BlockFace face : faces) {
             face.getQuad().createFloatArrayForQuad();

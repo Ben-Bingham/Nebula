@@ -18,28 +18,32 @@ public class Quad {
 
     private float[] floatArrayOfQuad;
 
-    private final int positionLength = 3;
-    private final int textureCoordinateLength = 2;
-    private final int vertexLength = positionLength + textureCoordinateLength;
-    private final int numberOfVertices = 4;
+    private final int POSITION_LENGTH = 3;
+    private final int TEXTURE_COORDINATE_LENGTH = 2;
+    private final int NORMAL_LENGTH = 3;
+    private final int VERTEX_LENGTH = POSITION_LENGTH + TEXTURE_COORDINATE_LENGTH + NORMAL_LENGTH;
+    private final int NUMBER_OF_VERTICES = 4;
 
     public Quad() {
-        vertices = new Vertex[numberOfVertices];
+        vertices = new Vertex[NUMBER_OF_VERTICES];
 
         for (int i = 0; i < vertices.length; i++) {
-            vertices[i] = new Vertex(new Vector3f(0.0f, 0.0f, 0.0f), new Vector2f(0.0f, 0.0f));
+            vertices[i] = new Vertex(new Vector3f(0.0f, 0.0f, 0.0f), new Vector2f(0.0f, 0.0f),new Vector3f());
         }
     }
 
     public float[] convertToFloatArray() {
-        float[] array = new float[numberOfVertices * vertexLength];
+        float[] array = new float[NUMBER_OF_VERTICES * VERTEX_LENGTH];
 
         for (int i = 0; i < vertices.length; i++) {
-            array[vertexLength * i] = vertices[i].position.x;
-            array[1 + vertexLength * i] = vertices[i].position.y;
-            array[2 + vertexLength * i] = vertices[i].position.z;
-            array[3 + vertexLength * i] = vertices[i].texCords.x;
-            array[4 + vertexLength * i] = vertices[i].texCords.y;
+            array[VERTEX_LENGTH * i] = vertices[i].position.x;
+            array[1 + VERTEX_LENGTH * i] = vertices[i].position.y;
+            array[2 + VERTEX_LENGTH * i] = vertices[i].position.z;
+            array[3 + VERTEX_LENGTH * i] = vertices[i].texCords.x;
+            array[4 + VERTEX_LENGTH * i] = vertices[i].texCords.y;
+            array[5 + VERTEX_LENGTH * i] = vertices[i].normals.x;
+            array[6 + VERTEX_LENGTH * i] = vertices[i].normals.y;
+            array[7 + VERTEX_LENGTH * i] = vertices[i].normals.z;
         }
 
         return array;
@@ -50,31 +54,37 @@ public class Quad {
     }
 
     public void importData(float[] data) {
-        if (data.length > (numberOfVertices * vertexLength)) throw new IllegalArgumentException("Too much data given");
-        if (data.length < (numberOfVertices * vertexLength)) throw new IllegalArgumentException("Not enough data given");
+        if (data.length > (NUMBER_OF_VERTICES * VERTEX_LENGTH)) throw new IllegalArgumentException("Too much data given");
+        if (data.length < (NUMBER_OF_VERTICES * VERTEX_LENGTH)) throw new IllegalArgumentException("Not enough data given");
 
-        for (int i = 0; i < (data.length / vertexLength); i++) {
-            this.vertices[i].position.x = data[0 + vertexLength * i];
-            this.vertices[i].position.y = data[1 + vertexLength * i];
-            this.vertices[i].position.z = data[2 + vertexLength * i];
-            this.vertices[i].texCords.x = data[3 + vertexLength * i];
-            this.vertices[i].texCords.y = data[4 + vertexLength * i];
+        for (int i = 0; i < (data.length / VERTEX_LENGTH); i++) {
+            this.vertices[i].position.x = data[0 + VERTEX_LENGTH * i];
+            this.vertices[i].position.y = data[1 + VERTEX_LENGTH * i];
+            this.vertices[i].position.z = data[2 + VERTEX_LENGTH * i];
+            this.vertices[i].texCords.x = data[3 + VERTEX_LENGTH * i];
+            this.vertices[i].texCords.y = data[4 + VERTEX_LENGTH * i];
+            this.vertices[i].normals.x = data[5 + VERTEX_LENGTH * i];
+            this.vertices[i].normals.y = data[6 + VERTEX_LENGTH * i];
+            this.vertices[i].normals.z = data[7 + VERTEX_LENGTH * i];
         }
     }
 
-    public void importData(float[] positionData, float[] textureCordData) {
-        if (positionData.length > (numberOfVertices * positionLength)) throw new IllegalArgumentException("Too much data given");
-        if (positionData.length < (numberOfVertices * positionLength)) throw new IllegalArgumentException("Not enough data given");
+    public void importData(float[] positionData, float[] textureCordData, float[] normals) {
+        if (positionData.length > (NUMBER_OF_VERTICES * POSITION_LENGTH)) throw new IllegalArgumentException("Too much data given");
+        if (positionData.length < (NUMBER_OF_VERTICES * POSITION_LENGTH)) throw new IllegalArgumentException("Not enough data given");
 
-        if (textureCordData.length > (numberOfVertices * textureCoordinateLength)) throw new IllegalArgumentException("Too much data given");
-        if (textureCordData.length < (numberOfVertices * textureCoordinateLength)) throw new IllegalArgumentException("Not enough data given");
+        if (textureCordData.length > (NUMBER_OF_VERTICES * TEXTURE_COORDINATE_LENGTH)) throw new IllegalArgumentException("Too much data given");
+        if (textureCordData.length < (NUMBER_OF_VERTICES * TEXTURE_COORDINATE_LENGTH)) throw new IllegalArgumentException("Not enough data given");
 
-        for (int i = 0; i < ((textureCordData.length  + positionData.length) / vertexLength); i++) {
-            this.vertices[i].position.x = positionData[0 + positionLength * i];
-            this.vertices[i].position.y = positionData[1 + positionLength * i];
-            this.vertices[i].position.z = positionData[2 + positionLength * i];
-            this.vertices[i].texCords.x = textureCordData[0 + textureCoordinateLength * i];
-            this.vertices[i].texCords.y = textureCordData[1 + textureCoordinateLength * i];
+        for (int i = 0; i < ((textureCordData.length + positionData.length + normals.length) / VERTEX_LENGTH); i++) {
+            this.vertices[i].position.x = positionData[0 + POSITION_LENGTH * i];
+            this.vertices[i].position.y = positionData[1 + POSITION_LENGTH * i];
+            this.vertices[i].position.z = positionData[2 + POSITION_LENGTH * i];
+            this.vertices[i].texCords.x = textureCordData[0 + TEXTURE_COORDINATE_LENGTH * i];
+            this.vertices[i].texCords.y = textureCordData[1 + TEXTURE_COORDINATE_LENGTH * i];
+            this.vertices[i].normals.x = normals[0 + NORMAL_LENGTH * i];
+            this.vertices[i].normals.y = normals[1 + NORMAL_LENGTH * i];
+            this.vertices[i].normals.z = normals[2 + NORMAL_LENGTH * i];
         }
     }
 

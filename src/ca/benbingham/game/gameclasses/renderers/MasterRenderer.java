@@ -8,10 +8,7 @@ import ca.benbingham.game.gameclasses.renderers.interfaces.IRenderer;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
-import org.lwjgl.system.Callback;
 
-import static ca.benbingham.engine.util.Printing.print;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
@@ -21,8 +18,8 @@ public class MasterRenderer implements IRenderer {
     public DebugRenderer debugRenderer;
     public SkyboxRenderer skyboxRenderer;
 
-    private int windowHeight = 400;
-    private int windowWidth = 800;
+    private int windowHeight = 1080;
+    private int windowWidth = 1920;
 
     private Camera camera;
     private Window window;
