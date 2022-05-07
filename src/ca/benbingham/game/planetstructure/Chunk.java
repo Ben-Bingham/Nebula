@@ -1,17 +1,17 @@
 package ca.benbingham.game.planetstructure;
 
-import ca.benbingham.engine.graphics.renderingobjects.ElementBufferObject;
-import ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject;
-import ca.benbingham.engine.graphics.renderingobjects.VertexBufferObject;
+import ca.benbingham.engine.graphics.openglobjects.ElementBufferObject;
+import ca.benbingham.engine.graphics.openglobjects.VertexArrayObject;
+import ca.benbingham.engine.graphics.openglobjects.VertexBufferObject;
 import ca.benbingham.game.planetstructure.blocks.Block;
 import ca.benbingham.game.planetstructure.geometry.Mesh;
-import ca.benbingham.game.planetstructure.planetgeneration.TerrainGenerator;
+import ca.benbingham.game.generation.planetgeneration.TerrainGenerator;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
 
-import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.createAttributePointer;
-import static ca.benbingham.engine.graphics.renderingobjects.VertexArrayObject.enableAttributePointer;
+import static ca.benbingham.engine.graphics.openglobjects.VertexArrayObject.createAttributePointer;
+import static ca.benbingham.engine.graphics.openglobjects.VertexArrayObject.enableAttributePointer;
 import static ca.benbingham.engine.util.Printing.print;
 
 public class Chunk {
@@ -147,33 +147,6 @@ public class Chunk {
 
     public void setHasMeshToBeBound(boolean hasMeshToBeBound) {
         this.hasMeshToBeBound = hasMeshToBeBound;
-    }
-
-    public void setHasMesh(boolean hasMesh) {
-        this.hasMesh = hasMesh;
-    }
-
-    public boolean isNeedsMesh() {
-        return needsMesh;
-    }
-
-    public void setNeedsMesh(boolean needsMesh) {
-        this.needsMesh = needsMesh;
-    }
-
-    public Mesh getMesh() {
-        return mesh;
-    }
-
-    public int getDistanceFromPlayerChunk() {
-        return distanceFromPlayerChunk;
-    }
-
-    public void setDistanceFromPlayerChunk(Vector2i playerChunkCords) {
-        int xDiff = playerChunkCords.x - coordinates.x;
-        int yDiff = playerChunkCords.y - coordinates.y;
-
-        this.distanceFromPlayerChunk = (int) Math.abs(Math.floor(Math.sqrt((xDiff * xDiff) + (yDiff * yDiff))));
     }
 
     public void delete() {

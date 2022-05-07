@@ -1,35 +1,54 @@
 package ca.benbingham.game.gameclasses;
 
+import ca.benbingham.engine.io.Window;
+import ca.benbingham.engine.util.events.Event;
+import ca.benbingham.engine.util.events.EventBus;
+import ca.benbingham.engine.util.events.EventListener;
+import ca.benbingham.game.events.KeyboardPress;
+import ca.benbingham.game.events.MousePosition;
+import ca.benbingham.game.events.ScrollWheel;
+import ca.benbingham.game.events.states.*;
+import ca.benbingham.game.gameclasses.renderers.Renderer;
 import ca.benbingham.game.planetstructure.blocks.BlockList;
-import ca.benbingham.game.gameclasses.renderers.MasterRenderer;
-import ca.benbingham.game.planetstructure.Chunk;
 
-import ca.benbingham.game.planetstructure.bodys.Planet;
-import ca.benbingham.game.planetstructure.enums.EPlanetTypes;
-import ca.benbingham.game.planetstructure.planetgeneration.ChunkGenerationManager;
-
-import ca.benbingham.game.util.FPSCounter;
-import org.joml.Vector2i;
-import org.joml.Vector3f;
+import ca.benbingham.engine.util.FPSCounter;
+import org.lwjgl.opengl.GL;
 
 import static ca.benbingham.engine.util.GLError.getOpenGLError;
+import static ca.benbingham.engine.util.Printing.print;
+import static org.lwjgl.glfw.GLFW.*;
 
-public class Game {
-    private MasterRenderer masterRenderer;
+/**
+ * This class handles the big picture parts of the game, like:
+ *      Events,
+ *      Player creation,
+ *      Window Creation,
+ *      Controls,
+ *      Time,
+ *      and more...
+ */
+
+public class Game implements EventListener {
+    public EventBus eventBus;
+    private final Event initEvent = new Init();
+    private final Event firstUpdateEvent = new FirstUpdate();
+    private final Update updateEvent = new Update();
+    private final Event lastUpdateEvent = new LastUpdate();
+    private final Event terminateEvent = new Terminate();
+
+    public Renderer renderer;
+
     private boolean gameOpen = true;
 
-    private Vector3f playerPosition = new Vector3f(0, 0, 0);
+    public Player player;
+    private GameManager manager;
 
-    private Vector2i playerChunkCords;
-    private Vector2i lastPlayerChunk;
-    private final int renderDistance = 15;
+    public Window window;
+
     private BlockList masterBlockList;
 
-    private Planet activePlanet;
-
-    private ChunkGenerationManager chunkGenerationManager;
-
-    private boolean beforeFirstChunkCrossing = true;
+    private double deltaTime = 0;
+    private double lastFrame = 0;
 
     FPSCounter fpsCounter = new FPSCounter(false);
 
@@ -37,73 +56,122 @@ public class Game {
         init();
 
         while (gameOpen) {
-            masterRenderer.firstUpdate();
-
-            playerChunkCords.x = (int) Math.floor(playerPosition.x / Chunk.xSize);
-            playerChunkCords.y = (int) Math.floor(playerPosition.z / Chunk.zSize);
-
-            if (playerChunkCords.x != lastPlayerChunk.x || playerChunkCords.y != lastPlayerChunk.y || beforeFirstChunkCrossing) { // Player moves between chunks.
-                chunkGenerationManager.moveBetweenChunks(playerChunkCords, beforeFirstChunkCrossing);
-                beforeFirstChunkCrossing = false;
-            }
-
-            lastPlayerChunk.x = playerChunkCords.x;
-            lastPlayerChunk.y = playerChunkCords.y;
-
-            // GAME LOOP
-            chunkGenerationManager.update();
-            fpsCounter.update();
-
-            masterRenderer.lastUpdate();
-
-            getOpenGLError(new Throwable());
+            firstUpdate();
+            update();
+            lastUpdate();
         }
 
-        delete();
+        terminate();
     }
 
     private void init() {
+        window = new Window(Settings.WINDOW_HEIGHT, Settings.WINDOW_WIDTH, "Nebula", true);
+
+        window.create();
+        window.centerWindow();
+
+        player = new Player(this);
+
+        glfwSetInputMode(window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+        GL.createCapabilities();
+
         masterBlockList = new BlockList();
         masterBlockList.init();
 
-        masterRenderer = new MasterRenderer(this);
+        renderer = new Renderer(this);
 
-        masterRenderer.init();
+        manager = new GameManager(this);
 
-        playerChunkCords = new Vector2i(0, 0);
-        lastPlayerChunk = new Vector2i(0, 0);
+        eventBus = new EventBus();
+        eventBus.addListener(manager);
+        eventBus.addListener(player);
+        eventBus.addListener(this);
+        eventBus.addListener(renderer);
 
-        activePlanet = new Planet(EPlanetTypes.NEBULA_DEFAULT_PLANET, 2398479234874f, 400000);
+        eventBus.emit(initEvent);
 
-        chunkGenerationManager = new ChunkGenerationManager(renderDistance, masterRenderer.chunkRenderer, masterBlockList, activePlanet);
+        IOInput();
+
+        //Callback debugProc = GLUtil.setupDebugMessageCallback(); //prints OpenGL debug info to the console
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
 
-    public void resizeWindow() {
-        masterRenderer.resizeWindow();
+    private void firstUpdate() {
+        eventBus.emit(firstUpdateEvent);
     }
+
+    private void update() {
+        updateEvent.deltaTime = deltaTime;
+        eventBus.emit(updateEvent);
+
+        deltaTime = (float) (glfwGetTime() - lastFrame);
+        lastFrame = (float) glfwGetTime();
+
+        fpsCounter.update();
+    }
+
+    private void lastUpdate() {
+        eventBus.emit(lastUpdateEvent);
+
+        glfwSwapBuffers(window.getWindow());
+        glfwPollEvents();
+
+        getOpenGLError(new Throwable());
+    }
+
+    // --------------------------------------------------- EVENTS ------------------------------------------------------
+
+    public void IOInput() {
+        glfwSetKeyCallback(window.getWindow(), (window, key, scancode, action, mods) -> {
+            eventBus.emit(new KeyboardPress(window, key, scancode, action, mods));
+        });
+
+        glfwSetScrollCallback(window.getWindow(), (window, xOffset, yOffset) -> {
+            eventBus.emit(new ScrollWheel(window, xOffset, yOffset));
+        });
+
+        glfwSetCursorPosCallback(window.getWindow(), (window, xPos, yPos) -> {
+            eventBus.emit(new MousePosition(window, xPos, yPos));
+        });
+    }
+
+    private void keyboardInput(KeyboardPress event) {
+        if (event.key == GLFW_KEY_ESCAPE && event.action == GLFW_PRESS) {
+            glfwWindowShouldClose(window.getWindow());
+            gameOpen = false;
+        }
+    }
+
+    @Override
+    public void receiveEvents(Event event) {
+        if (event instanceof KeyboardPress) {
+            keyboardInput((KeyboardPress) event);
+        }
+    }
+
+    public void terminate() {
+        eventBus.emit(terminateEvent);
+
+        glfwSetWindowShouldClose(window.getWindow(), true);
+        window.destroy();
+    }
+
+    // ------------------------------------------------ SETTERS & GETTERS ----------------------------------------------
 
     public void setGameOpen(boolean gameOpen) {
         this.gameOpen = gameOpen;
     }
 
-    public void setPlayerPosition(Vector3f playerPosition) {
-        this.playerPosition = playerPosition;
+    public Window getWindow() {
+        return window;
     }
 
-    public int getRenderDistance() {
-        return renderDistance;
+    public BlockList getMasterBlockList() {
+        return masterBlockList;
     }
 
-    public Vector2i getPlayerChunkCords() {
-        return playerChunkCords;
-    }
-
-    public Planet getActivePlanet() {
-        return activePlanet;
-    }
-
-    public void delete() {
-        masterRenderer.delete();
-        chunkGenerationManager.delete();
+    public double getDeltaTime() {
+        return deltaTime;
     }
 }

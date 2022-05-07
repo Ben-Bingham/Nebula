@@ -23,4 +23,12 @@ public class Vector3fMath {
 
         return result;
     }
+
+    public static double distanceBetween(Vector3f vector1, Vector3f vector2) {
+        double xComponent = Math.pow(vector2.x - vector1.x, 2);
+        double yComponent = Math.pow(vector2.y - vector1.y, 2);
+        double zComponent = Math.pow(vector2.z - vector1.z, 2);
+
+        return Math.sqrt(xComponent + yComponent + zComponent);
+    }
 }

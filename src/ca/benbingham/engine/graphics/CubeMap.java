@@ -1,6 +1,6 @@
 package ca.benbingham.engine.graphics;
 
-import ca.benbingham.engine.images.Image;
+import ca.benbingham.engine.graphics.images.Image;
 
 import java.nio.ByteBuffer;
 

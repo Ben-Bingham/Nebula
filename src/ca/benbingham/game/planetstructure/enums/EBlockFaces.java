@@ -7,7 +7,9 @@ public enum EBlockFaces {
     NEBULA_BOTTOM_FACE(3),
     NEBULA_RIGHT_FACE(4),
     NEBULA_LEFT_FACE(5),
-    NEBULA_ALL_FACES(6);
+    NEBULA_ALL_FACES(6),
+    NEBULA_TOP_BOTTOM_FACES(7),
+    NEBULA_FRONT_BACK_LEFT_RIGHT(8);
 
     private final int value;
 

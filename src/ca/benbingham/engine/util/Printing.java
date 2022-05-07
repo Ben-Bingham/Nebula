@@ -1,6 +1,7 @@
 package ca.benbingham.engine.util;
 
 import org.joml.Vector2i;
+import org.joml.Vector3f;
 
 public class Printing {
     public static void print(String input) {
@@ -34,4 +35,7 @@ public class Printing {
         System.out.println("X: " + input.x + ", Y: " + input.y);
     }
 
+    public static void print(Vector3f input) {
+        System.out.println("X: " + input.x + ", Y: " + input.y + ", Z: " + input.z);
+    }
 }

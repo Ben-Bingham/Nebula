@@ -1,12 +1,9 @@
 package ca.benbingham.engine.graphics;
 
-import ca.benbingham.engine.images.Image;
-import org.lwjgl.BufferUtils;
+import ca.benbingham.engine.graphics.images.Image;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
-import static ca.benbingham.engine.util.GLError.getOpenGLError;
 import static ca.benbingham.engine.util.Printing.printError;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
