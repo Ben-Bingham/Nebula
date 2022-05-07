@@ -1,9 +1,8 @@
 package ca.benbingham.engine.graphics;
 
-import org.lwjgl.BufferUtils;
+import ca.benbingham.engine.graphics.images.Image;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 import static ca.benbingham.engine.util.Printing.printError;
 import static org.lwjgl.opengl.GL11.*;
@@ -11,7 +10,7 @@ import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 import static org.lwjgl.stb.STBImage.*;
 
 public class Texture {
-    private String filePath;
+    private Image image;
     private final int texture;
 
     public Texture() {
@@ -19,31 +18,26 @@ public class Texture {
         glBindTexture(GL_TEXTURE_2D, texture);
     }
 
-    public void bindImageData(String filepath, boolean flipImage) {
-        stbi_set_flip_vertically_on_load(flipImage);
+    public void bindImageData(Image image) {
+        this.image = image;
 
-        this.filePath = filepath;
+        ByteBuffer byteBufferImage = image.getByteBufferImage();
 
-        IntBuffer width = BufferUtils.createIntBuffer(1);
-        IntBuffer height = BufferUtils.createIntBuffer(1);
-        IntBuffer channels = BufferUtils.createIntBuffer(1);
-        ByteBuffer image = stbi_load(filepath, width, height, channels, 0);
-
-        if (image != null) {
-            if (channels.get(0) == 3) {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width.get(0), height.get(0), 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+        if (byteBufferImage != null) {
+            if (image.getChannels() == 3) {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.getWidth(), image.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, byteBufferImage);
             }
-            else if(channels.get(0) == 4) {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width.get(0), height.get(0), 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+            else if(image.getChannels() == 4) {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, byteBufferImage);
             }
             else {
                 printError("Unknown number of channels in image (Texture)");
             }
 
-            stbi_image_free(image);
+            stbi_image_free(byteBufferImage);
         }
         else {
-            printError("Could not load image for texture " + filepath);
+            printError("Could not load image for texture " + image.getPath());
         }
     }
 
@@ -53,11 +47,11 @@ public class Texture {
     }
 
     public void setStretchMode(int stretchMode) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, stretchMode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, stretchMode);
     }
 
     public void setShrinkMode(int shrinkMode) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shrinkMode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, shrinkMode);
     }
 
     public void generateMipmaps() {
@@ -73,4 +67,8 @@ public class Texture {
     }
 
     public void delete() { glDeleteTextures(texture);}
+
+    public int getTexture() {
+        return texture;
+    }
 }

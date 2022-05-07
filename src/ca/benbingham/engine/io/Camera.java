@@ -1,9 +1,12 @@
 package ca.benbingham.engine.io;
 
+import ca.benbingham.game.events.KeyboardPress;
+import ca.benbingham.game.events.MousePosition;
+import ca.benbingham.game.events.ScrollWheel;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import static ca.benbingham.engine.util.Vector3fMath.*;
+import static ca.benbingham.engine.util.math.Vector3fMath.*;
 import static java.lang.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -31,6 +34,7 @@ public class Camera {
 
     private float yaw;
     private float pitch;
+    private float zFar;
 
     private float yawOffset;
     private float pitchOffset;
@@ -49,35 +53,16 @@ public class Camera {
     private float lastFrame;
     private float deltaTime;
 
-    public Camera(Window window, float maxFOV, float mouseSensitivity, float movementSpeed) {
+    public Camera(Window window, float maxFOV, float mouseSensitivity, float movementSpeed, Vector3f spawnLocation, float zFar) {
         this.maxFOV = maxFOV;
         this.FOV = maxFOV;
         this.window = window;
         this.mouseSensitivity = mouseSensitivity;
         this.baseMovementSpeed = movementSpeed;
+        this.zFar = zFar;
 
         this.lastMouseX = window.getWidth() / 2f;
-        this.lastMouseY = window.getHeight() /2f;
-
-        yaw = -90f;
-
-        front = new Vector3f(0.0f, 0.0f, -1.0f);
-        worldUp = new Vector3f(0.0f, 1.0f, 0.0f);
-        position = new Vector3f(0.0f, 0.0f, 3.0f);
-
-        projectionMatrix = new Matrix4f()
-                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, 100f);
-
-    }
-    public Camera(Window window, float maxFOV, float mouseSensitivity, float movementSpeed, Vector3f spawnLocation) {
-        this.maxFOV = maxFOV;
-        this.FOV = maxFOV;
-        this.window = window;
-        this.mouseSensitivity = mouseSensitivity;
-        this.baseMovementSpeed = movementSpeed;
-
-        this.lastMouseX = window.getWidth() / 2f;
-        this.lastMouseY = window.getHeight() /2f;
+        this.lastMouseY = window.getHeight() / 2f;
 
         yaw = -90f;
 
@@ -86,46 +71,22 @@ public class Camera {
         position = spawnLocation;
 
         projectionMatrix = new Matrix4f()
-                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, 100f);
+                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, zFar);
+
+        update();
     }
 
-    private void receiveMousePositionInput() {
-        glfwSetCursorPosCallback(window.getWindow(), (window, xPos, yPos) -> {
-            this.mouseX = (float) xPos;
-            this.mouseY = (float) yPos;
+    public void mousePositionInput(MousePosition event) {
+        this.mouseX = (float) event.xPos;
+        this.mouseY = (float) event.yPos;
 
-            processMouseMovement();
-        });
-    }
-    private void receiveScrollWheelInput() {
-        glfwSetScrollCallback(window.getWindow(), (window, xOffset, yOffset) -> {
-            scrollOffsetY = (float) yOffset;
-
-            processMouseScroll();
-        });
+        processMouseMovement();
     }
 
-    private void receiveMovementInput() {
-        if (glfwGetKey(window.getWindow(), GLFW_KEY_W) == GLFW_PRESS) {
-            wKey = true;
-        }
-        if (glfwGetKey(window.getWindow(), GLFW_KEY_S) == GLFW_PRESS) {
-            sKey = true;
-        }
-        if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS) {
-            aKey = true;
-        }
-        if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_PRESS) {
-            dKey = true;
-        }
-        if (glfwGetKey(window.getWindow(), GLFW_KEY_SPACE) == GLFW_PRESS) {
-            spaceKey = true;
-        }
-        if (glfwGetKey(window.getWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-            shiftKey = true;
-        }
+    public void scrollWheelInput(ScrollWheel event) {
+        scrollOffsetY = (float) event.yOffset;
 
-        processMovement();
+        processMouseScroll();
     }
 
     private void processMouseMovement() {
@@ -156,41 +117,33 @@ public class Camera {
         baseMovementSpeed -= scrollOffsetY * -1;
         if (baseMovementSpeed < 0.01f)
             baseMovementSpeed = 0.01f;
-        if (baseMovementSpeed > 100)
-            baseMovementSpeed = 100;
+        if (baseMovementSpeed > 10000)
+            baseMovementSpeed = 10000;
     }
 
     private void processMovement() {
         if (wKey) {
             position = add(position, multiply(front, movementSpeed));
-            wKey = false;
         }
         if (sKey) {
             position = subtract(position, multiply(front, movementSpeed));
-            sKey = false;
         }
         if (aKey) {
             position = subtract(position, multiply(crossProduct(front, up).normalize(), movementSpeed));
-            aKey = false;
         }
         if (dKey) {
             position = add(position, multiply(crossProduct(front, up).normalize(), movementSpeed));
-            dKey = false;
         }
         if (spaceKey) {
             position = add(position, multiply(worldUp, movementSpeed));
-            spaceKey = false;
         }
         if (shiftKey) {
             position = subtract(position, multiply(worldUp, movementSpeed));
-            shiftKey = false;
         }
     }
 
     public void update() {
-        receiveMousePositionInput();
-        receiveScrollWheelInput();
-        receiveMovementInput();
+        processMovement();
 
         updateCameraVectors();
         updateViewMatrix();
@@ -216,6 +169,62 @@ public class Camera {
         // Use cross product to calculate the right vector and up vector
         right = crossProduct(front, worldUp).normalize();
         up = crossProduct(right, front).normalize();
+    }
+
+    public void resizeWindow() {
+        projectionMatrix = new Matrix4f()
+                .perspective((float) toRadians(this.getFOV()), (float) window.getWidth() / window.getHeight(), 0.1f, zFar);
+    }
+
+    public void keyboardPress(KeyboardPress event) {
+        if (event.key == GLFW_KEY_W) {
+            if (event.action == GLFW_PRESS) {
+                wKey = true;
+            }
+            else if (event.action == GLFW_RELEASE) {
+                wKey = false;
+            }
+        }
+        if (event.key == GLFW_KEY_S) {
+            if (event.action == GLFW_PRESS) {
+                sKey = true;
+            }
+            else if (event.action == GLFW_RELEASE) {
+                sKey = false;
+            }
+        }
+        if (event.key == GLFW_KEY_A) {
+            if (event.action == GLFW_PRESS) {
+                aKey = true;
+            }
+            else if (event.action == GLFW_RELEASE) {
+                aKey = false;
+            }
+        }
+        if (event.key == GLFW_KEY_D) {
+            if (event.action == GLFW_PRESS) {
+                dKey = true;
+            }
+            else if (event.action == GLFW_RELEASE) {
+                dKey = false;
+            }
+        }
+        if (event.key == GLFW_KEY_SPACE) {
+            if (event.action == GLFW_PRESS) {
+                spaceKey = true;
+            }
+            else if (event.action == GLFW_RELEASE) {
+                spaceKey = false;
+            }
+        }
+        if (event.key == GLFW_KEY_LEFT_SHIFT) {
+            if (event.action == GLFW_PRESS) {
+                shiftKey = true;
+            }
+            else if (event.action == GLFW_RELEASE) {
+                shiftKey = false;
+            }
+        }
     }
 
     public Matrix4f getViewMatrix() {
@@ -244,5 +253,9 @@ public class Camera {
 
     public void setMovementSpeed(float movementSpeed) {
         this.movementSpeed = movementSpeed;
+    }
+
+    public void setPosition(Vector3f position) {
+        this.position = position;
     }
 }
